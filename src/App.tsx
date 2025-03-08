@@ -1,106 +1,133 @@
-import { SyntheticEvent, useState } from "react";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import {
-  Button,
-  Image,
-  ImagePreview,
-  SideSheet,
-  TextArea,
-} from "@douyinfe/semi-ui";
+/* eslint-disable react/react-in-jsx-scope */
 import "./App.css";
 
-function App() {
-  const [_, setThemeMode] = useState("dark");
-  const [imgList, setImgList] = useState<string[]>([]);
-  const [localPath, setLocalPath] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [imgOnClick, setImgOnClick] = useState("");
+import { IconMaximize, IconMinus, IconQuit } from "@douyinfe/semi-icons";
+import { IconBadge, IconForm, IconTree } from "@douyinfe/semi-icons-lab";
+import { Button, Nav, Switch } from "@douyinfe/semi-ui";
+import { Layout } from "@douyinfe/semi-ui";
+import { Window } from "@tauri-apps/api/window";
+import { useState } from "react";
 
-  const switchMode = () => {
-    const body = document.body;
-    if (body.hasAttribute("theme-mode")) {
-      body.removeAttribute("theme-mode");
-      setThemeMode("light");
-    } else {
-      body.setAttribute("theme-mode", "dark");
-      setThemeMode("dark");
-    }
-  };
+import { ImageBoard } from "./ImageBoard";
 
-  function getImages() {
-    const paths = localPath.split("\n");
-    invoke<string[]>("find_files_by_ext", {
-      paths,
-      exts: ["jpg", "jpeg", "png"],
-    }).then((res) => setImgList(res));
-  }
+const appWindow = new Window("main");
+
+const MainLayout = () => {
+  const { Footer, Sider, Content } = Layout;
+  const [darkMode, setDarkMode] = useState(false);
 
   return (
     <>
-      <Button onClick={switchMode}>Switch Mode</Button>
-      <Button onClick={getImages}>Get Images</Button>
-
-      <TextArea
-        autosize
-        rows={1}
-        onChange={(v) => setLocalPath(v)}
-        value={localPath}
-      />
-
-      <SideSheet
-        title="Image Info"
-        visible={visible}
-        onCancel={() => setVisible(false)}
-        width="30%"
-        closeOnEsc={true}
+      <div
+        data-tauri-drag-region
+        style={{
+          backgroundColor: "var(--semi-color-bg-1)",
+          display: "flex",
+          padding: "4px",
+          position: "sticky",
+          top: 0,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
-        <Image
-          src={imgOnClick}
-          style={{ width: "100%", textAlign: "center" }}
-          imgStyle={{
-            width: "100%",
-            maxWidth: 512,
-            objectFit: "contain",
-            objectPosition: "center",
-          }}
-        />
-      </SideSheet>
+        <Switch style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
+          marginLeft: "auto",
+        }} onChange={(c, _) => {
+          if (c) {
+            setDarkMode(true);
+            document.body.setAttribute("theme-mode", "dark");
+          } else {
+            setDarkMode(false);
+            document.body.removeAttribute("theme-mode");
+          }
+        }} />
 
-      <ImagePreview>
-        {imgList.map((path) => (
-          <Image
-            key={path}
-            src={convertFileSrc(path)}
-            preview={false}
-            onClick={(e) => {
-              setImgOnClick(e.target.currentSrc);
-              setVisible(true);
-            }}
-            style={{
-              width: "10%",
-              aspectRatio: "1/1",
-              margin: 16,
-              background: `url(${convertFileSrc(
-                path
-              )}) no-repeat center center`,
-            }}
-            imgStyle={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              objectPosition: "center",
-              border: `1px solid ${
-                document.body.getAttribute("theme-mode") === "dark"
-                  ? "#fff"
-                  : "#000"
-              }`,
-              backdropFilter: "blur(8px)",
-            }}
-          />
-        ))}
-      </ImagePreview>
+        <Button
+          theme="borderless"
+          icon={<IconMinus />}
+          style={{
+            color: "var(--semi-color-text-1)",
+            marginRight: "12px",
+          }}
+          onClick={() => appWindow.minimize()}
+        />
+        <Button
+          theme="borderless"
+          icon={<IconMaximize />}
+          style={{
+            color: "var(--semi-color-text-1)",
+            marginRight: "12px",
+          }}
+          onClick={() => appWindow.toggleMaximize()}
+        />
+        <Button
+          theme="borderless"
+          icon={<IconQuit />}
+          style={{
+            color: "var(--semi-color-text-1)",
+            marginRight: "12px",
+          }}
+          onClick={() => appWindow.close()}
+        />
+      </div>
+
+      <Layout
+        style={{
+          border: "1px solid var(--semi-color-border)",
+          width: "100vw",
+          height: "100vh",
+        }}
+      >
+        <Sider style={{ backgroundColor: "var(--semi-color-bg-1)" }}>
+          <Nav
+            defaultSelectedKeys={["Home"]}
+            style={{ maxWidth: 220, height: "100%" }}
+            defaultIsCollapsed={true}
+          >
+            <Nav.Item itemKey={"union"} text={"活动管理"} icon={<IconForm />} />
+            <Nav.Sub itemKey={"user"} text="用户管理" icon={<IconBadge />}>
+              <Nav.Item itemKey={"active"} text={"活跃用户"} />
+              <Nav.Item itemKey={"negative"} text={"非活跃用户"} />
+            </Nav.Sub>
+            <Nav.Sub
+              itemKey={"union-management"}
+              text="任务管理"
+              icon={<IconTree />}
+            >
+              <Nav.Item itemKey={"notice"} text={"任务设置"} />
+              <Nav.Item itemKey={"query"} text={"任务查询"} />
+              <Nav.Item itemKey={"info"} text={"信息录入"} />
+            </Nav.Sub>
+          </Nav>
+        </Sider>
+
+        <Content
+          style={{
+            padding: "24px",
+            backgroundColor: "var(--semi-color-bg-0)",
+          }}
+        >
+          <ImageBoard darkMode={darkMode} />
+        </Content>
+      </Layout>
+
+      <Footer
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "20px",
+          color: "var(--semi-color-text-2)",
+          backgroundColor: "rgba(var(--semi-grey-0), 1)",
+          position: "sticky",
+          bottom: 0,
+        }}
+      ></Footer>
     </>
   );
-}
+};
+
+const App = () => <MainLayout />;
 
 export default App;

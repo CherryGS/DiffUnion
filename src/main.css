@@ -1,0 +1,10 @@
+html {
+  border-radius: 10px !important;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
