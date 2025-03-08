@@ -1,10 +1,31 @@
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { Button, Image } from "@douyinfe/semi-ui";
+import {
+  Button,
+  Image,
+  ImagePreview,
+  SideSheet,
+  TextArea,
+} from "@douyinfe/semi-ui";
+import "./App.css";
 
 function App() {
+  const [_, setThemeMode] = useState("dark");
   const [imgList, setImgList] = useState<string[]>([]);
   const [localPath, setLocalPath] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [imgOnClick, setImgOnClick] = useState("");
+
+  const switchMode = () => {
+    const body = document.body;
+    if (body.hasAttribute("theme-mode")) {
+      body.removeAttribute("theme-mode");
+      setThemeMode("light");
+    } else {
+      body.setAttribute("theme-mode", "dark");
+      setThemeMode("dark");
+    }
+  };
 
   function getImages() {
     const paths = localPath.split("\n");
@@ -16,11 +37,68 @@ function App() {
 
   return (
     <>
+      <Button onClick={switchMode}>Switch Mode</Button>
       <Button onClick={getImages}>Get Images</Button>
 
-      {imgList.map((path) => (
-        <Image width={360} height={200} src={convertFileSrc(path)} />
-      ))}
+      <TextArea
+        autosize
+        rows={1}
+        onChange={(v) => setLocalPath(v)}
+        value={localPath}
+      />
+
+      <SideSheet
+        title="Image Info"
+        visible={visible}
+        onCancel={() => setVisible(false)}
+        width="30%"
+        closeOnEsc={true}
+      >
+        <Image
+          src={imgOnClick}
+          style={{ width: "100%", textAlign: "center" }}
+          imgStyle={{
+            width: "100%",
+            maxWidth: 512,
+            objectFit: "contain",
+            objectPosition: "center",
+          }}
+        />
+      </SideSheet>
+
+      <ImagePreview>
+        {imgList.map((path) => (
+          <Image
+            key={path}
+            src={convertFileSrc(path)}
+            preview={false}
+            onClick={(e) => {
+              setImgOnClick(e.target.currentSrc);
+              setVisible(true);
+            }}
+            style={{
+              width: "10%",
+              aspectRatio: "1/1",
+              margin: 16,
+              background: `url(${convertFileSrc(
+                path
+              )}) no-repeat center center`,
+            }}
+            imgStyle={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center",
+              border: `1px solid ${
+                document.body.getAttribute("theme-mode") === "dark"
+                  ? "#fff"
+                  : "#000"
+              }`,
+              backdropFilter: "blur(8px)",
+            }}
+          />
+        ))}
+      </ImagePreview>
     </>
   );
 }
