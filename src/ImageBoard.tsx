@@ -6,6 +6,7 @@ import {
   Divider,
   Image,
   ImagePreview,
+  Input,
   SideSheet,
   TextArea,
 } from "@douyinfe/semi-ui";
@@ -18,6 +19,7 @@ export const ImageBoard = ({ darkMode }: { darkMode: boolean }) => {
   const [localPath, setLocalPath] = useState("");
   const [visible, setVisible] = useState(false);
   const [imgOnClick, setImgOnClick] = useState("");
+  const [dataFolder, setDataFolder] = useState("");
 
 
   const switchMode = () => {
@@ -41,6 +43,8 @@ export const ImageBoard = ({ darkMode }: { darkMode: boolean }) => {
 
   return (
     <>
+      <Button onClick={() => { open({ title: "请选择一个空文件夹或之前的数据文件夹", directory: true }).then((v) => v !== null ? setDataFolder(v) : 0) }}>Open Directory</Button>
+      <Input disabled value={dataFolder} />
       <Button onClick={switchMode}>Switch Mode</Button>
       <Button onClick={getImages}>Get Images</Button>
 
@@ -87,7 +91,7 @@ export const ImageBoard = ({ darkMode }: { darkMode: boolean }) => {
               background: `url(${convertFileSrc(
                 path
               )}) no-repeat center center`,
-              border: `2px solid ${!darkMode
+              border: `2px solid ${darkMode
                 ? "#fff"
                 : "#000"
                 }`
@@ -97,7 +101,6 @@ export const ImageBoard = ({ darkMode }: { darkMode: boolean }) => {
               height: "100%",
               objectFit: "contain",
               objectPosition: "center",
-
               backdropFilter: "blur(8px)",
             }}
           />
