@@ -1,4 +1,5 @@
 use std::{collections::HashSet, path::PathBuf};
+use tauri::Manager;
 use walkdir::WalkDir;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -8,7 +9,17 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![find_files_by_ext])
+        .invoke_handler(tauri::generate_handler![
+            find_files_by_ext,
+            check_data_path_satisfy
+        ])
+        .setup(|app| {
+            let path = app.path().app_data_dir()?;
+            if !path.exists() {
+                std::fs::create_dir_all(&path)?;
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -37,4 +48,10 @@ fn find_files_by_ext(paths: Vec<&str>, exts: Vec<&str>) -> Vec<PathBuf> {
     let mut v: Vec<_> = set.into_iter().collect();
     v.sort_unstable_by(|x, y| y.0.cmp(&x.0));
     v.into_iter().map(|(_, p)| p).collect()
+}
+
+#[tauri::command()]
+fn check_data_path_satisfy(path: &str) -> bool {
+    let p = PathBuf::from(path);
+    p.exists() && p.is_dir()
 }

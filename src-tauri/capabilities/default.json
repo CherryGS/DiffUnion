@@ -17,6 +17,8 @@
     "core:window:allow-internal-toggle-maximize",
     "dialog:default",
     "store:default",
-    "fs:default"
+    "fs:default",
+    "fs:allow-app-read",
+    "fs:allow-app-write"
   ]
 }
