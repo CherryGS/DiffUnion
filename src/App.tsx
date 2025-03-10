@@ -1,16 +1,19 @@
+import { useState } from "react";
+import { Route, Routes, useNavigate } from "react-router";
+
 import {
   IconHome,
   IconMaximize,
   IconMinus,
   IconQuit,
 } from "@douyinfe/semi-icons";
-import { Button, Notification, Switch } from "@douyinfe/semi-ui";
-import { Window } from "@tauri-apps/api/window";
-import { useMemo, useState } from "react";
-import { MainLayout } from "./MainLayout";
+import { Button, Notification } from "@douyinfe/semi-ui";
+
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
-import { Route, Routes, useNavigate } from "react-router";
+import { Window } from "@tauri-apps/api/window";
+
+import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
 import { AppConfig, ConfigManager } from "./config";
 import { ConfigContext } from "./context";
@@ -33,43 +36,28 @@ const TitleBar = () => {
       }}
     >
       <Button
-        theme='borderless'
+        theme="borderless"
         icon={<IconHome />}
         style={{
           color: "var(--semi-color-text-1)",
           marginRight: "12px",
+          marginLeft: "12px",
         }}
         onClick={() => navigate("/")}
       />
-      {/* <Switch
+
+      <Button
+        theme="borderless"
+        icon={<IconMinus />}
         style={{
           color: "var(--semi-color-text-1)",
           marginRight: "12px",
           marginLeft: "auto",
         }}
-        onChange={(c, _) => {
-          if (c) {
-            setDarkMode(true);
-            document.body.setAttribute("theme-mode", "dark");
-          } else {
-            setDarkMode(false);
-            document.body.removeAttribute("theme-mode");
-          }
-        }}
-        defaultChecked={darkMode}
-      /> */}
-
-      <Button
-        theme='borderless'
-        icon={<IconMinus />}
-        style={{
-          color: "var(--semi-color-text-1)",
-          marginRight: "12px",
-        }}
         onClick={() => appWindow.minimize()}
       />
       <Button
-        theme='borderless'
+        theme="borderless"
         icon={<IconMaximize />}
         style={{
           color: "var(--semi-color-text-1)",
@@ -78,7 +66,7 @@ const TitleBar = () => {
         onClick={() => appWindow.toggleMaximize()}
       />
       <Button
-        theme='borderless'
+        theme="borderless"
         icon={<IconQuit />}
         style={{
           color: "var(--semi-color-text-1)",
@@ -90,13 +78,8 @@ const TitleBar = () => {
   );
 };
 
-const ErrOnDatafolder = () => {
-  return <></>;
-};
-
 const App = () => {
-  const [onChange, setOnChange] = useState(true);
-  const [dataFolder, setDataFolder] = useState("");
+  const [dataFolder, setDataFolder] = useState<null | string>(null);
   const [config, setConfig] = useState(
     new ConfigManager<AppConfig>(new AppConfig())
   );
@@ -118,18 +101,25 @@ const App = () => {
     return res;
   };
 
-  // 当 `dataFolder` 改变之后重新读取配置
-  useMemo(() => {
-    invoke<string>("get_global_config").then((v) =>
-      setConfig(new ConfigManager<AppConfig>(v))
-    );
-  }, [dataFolder]);
+  // 重新读取配置
+  const load_config = () => {
+    console.log(`Load config from ${dataFolder}`);
+    if (dataFolder === null) return;
+    invoke<string>("get_global_config").then((v) => {
+      if (v === JSON.stringify(config.stable)) return;
+      let _x: AppConfig = JSON.parse(v);
+      setConfig(new ConfigManager(_x));
+    });
+  };
+
+  load_config();
 
   // 每次都尝试读取 `dataFolder` 并设置
   get_datafolder_or_init()
     .then((v) => {
+      if (v === dataFolder) return;
       setDataFolder(v);
-      console.log(v);
+      console.log(`DataFolder set to ${v}`);
     })
     .catch((e) => console.log(e));
 
@@ -137,10 +127,8 @@ const App = () => {
     <ConfigContext.Provider value={config}>
       <TitleBar />
       <Routes>
-        <Route
-          path='*'
-          element={<MainLayout onChange={onChange} setOnChange={setOnChange} />}
-        />
+        <Route path="*" element={<MainLayout />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </ConfigContext.Provider>
   );

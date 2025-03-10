@@ -1,7 +1,7 @@
 export class WorkspaceConfig implements WorkspaceConfig {}
 
-export class AppConfig implements AppConfig {
-  darkMode: boolean = false;
+export class AppConfig implements _AppConfig {
+  darkMode: boolean = true;
   watchDirs: string[] = [];
   workspaces: string[] = [];
 }
@@ -11,7 +11,7 @@ export class AppConfig implements AppConfig {
  *
  * 一种基于事务的配置管理机制，在一次保存前，所有读取都发生在原始配置上，所有修改都发生在一个原始配置的副本上
  *
- * 根据机制，应该在保存发生时重载设置相关页面
+ * 请确保在调用 `save` 方法后进行更新或页面重载
  */
 export class ConfigManager<T> {
   latest: T;
@@ -43,16 +43,29 @@ export class ConfigManager<T> {
     return this.stable[k];
   }
 
+  /**
+   * 使用 v 的拷贝(`JSON`)
+   */
   set<K extends keyof T>(k: K, v: any) {
-    this.latest[k] = v;
+    this.latest[k] = JSON.parse(JSON.stringify(v));
   }
 
   /**
-   * 应用修改并返回 JSON 格式化后数据
+   * 应用修改并返回 JSON 格式化后数据，如果两者相等返回 bool 值 `true`
    */
   save() {
-    const res = JSON.stringify(this.latest);
-    this.stable = JSON.parse(res);
-    return res;
+    const a = JSON.stringify(this.latest);
+    const b = JSON.stringify(this.stable);
+    if (a == b) return true;
+    this.stable = JSON.parse(a);
+    return a;
+  }
+
+  /**
+   * 取消应用所有修改
+   */
+  cancle() {
+    const a = JSON.stringify(this.stable);
+    this.latest = JSON.parse(a);
   }
 }

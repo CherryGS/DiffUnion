@@ -6,13 +6,7 @@ import { ImageBoard } from "./ImageBoard";
 import { Route, Routes, useNavigate } from "react-router";
 import { Settings } from "./Settings";
 
-export const MainLayout = ({
-  onChange,
-  setOnChange,
-}: {
-  onChange: boolean;
-  setOnChange: any;
-}) => {
+export const MainLayout = () => {
   const { Footer, Sider, Content } = Layout;
   const navigate = useNavigate();
   return (
@@ -66,27 +60,10 @@ export const MainLayout = ({
         >
           <Routes>
             <Route path='/folder' element={<ImageBoard />} />
-            <Route
-              path='/settings'
-              element={
-                <Settings onChange={onChange} setOnChange={setOnChange} />
-              }
-            />
+            <Route path='/settings' element={<Settings />} />
           </Routes>
         </Content>
       </Layout>
-
-      <Footer
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "20px",
-          color: "var(--semi-color-text-2)",
-          backgroundColor: "rgba(var(--semi-grey-0), 1)",
-          position: "sticky",
-          bottom: 0,
-        }}
-      ></Footer>
     </>
   );
 };

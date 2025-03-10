@@ -65,13 +65,13 @@ fn find_files_by_ext(paths: Vec<&str>, exts: Vec<&str>) -> Vec<PathBuf> {
  */
 #[tauri::command()]
 fn get_datafolder() -> Result<PathBuf, PathBuf> {
-    let path = APP_DATA_DIR.get().unwrap().join("dataFolder.txt");
+    let file = APP_DATA_DIR.get().unwrap().join("dataFolder.txt");
     //当文件不存在时，创建
-    if path.is_file() == false {
-        write(&path, "").unwrap();
+    if file.is_file() == false {
+        write(&file, "").unwrap();
     }
 
-    let data_folder = PathBuf::from(std::fs::read_to_string(path).unwrap());
+    let data_folder = PathBuf::from(std::fs::read_to_string(file).unwrap());
     if data_folder.is_dir() == false {
         Err(data_folder)
     } else {
@@ -94,13 +94,17 @@ fn set_datafolder(v: &str) {
 #[tauri::command()]
 fn get_global_config() -> String {
     let file = get_datafolder().unwrap().join("config.json");
+    //当文件不存在时，创建
+    if file.is_file() == false {
+        write(&file, "{}").unwrap();
+    }
     std::fs::read_to_string(file).unwrap()
 }
 
 /**
- * 硬编码储存全局配置文件
+ * 硬编码储存全局配置文件，
  */
-#[tauri::command()]
+#[tauri::command]
 fn set_global_config(v: &str) {
     let file = get_datafolder().unwrap().join("config.json");
     std::fs::write(file, v).unwrap()
