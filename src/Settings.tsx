@@ -1,3 +1,9 @@
-export const Settings = () => {
+export const Settings = ({
+  onChange,
+  setOnChange,
+}: {
+  onChange: boolean;
+  setOnChange: any;
+}) => {
   return <></>;
 };

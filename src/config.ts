@@ -7,6 +7,8 @@ export class AppConfig implements AppConfig {
 }
 
 /**
+ * **请使用内置方法修改值**
+ *
  * 一种基于事务的配置管理机制，在一次保存前，所有读取都发生在原始配置上，所有修改都发生在一个原始配置的副本上
  *
  * 根据机制，应该在保存发生时重载设置相关页面
@@ -22,7 +24,7 @@ export class ConfigManager<T> {
    *
    *  `others` -> 先调用 `JSON.stringify` 格式化，再调用 `JSON.parse` 解析
    */
-  constructor(a: T) {
+  constructor(a: any) {
     switch (typeof a) {
       case "string": {
         this.latest = JSON.parse(a);

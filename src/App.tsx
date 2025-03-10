@@ -6,22 +6,18 @@ import {
 } from "@douyinfe/semi-icons";
 import { Button, Notification, Switch } from "@douyinfe/semi-ui";
 import { Window } from "@tauri-apps/api/window";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MainLayout } from "./MainLayout";
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Route, Routes, useNavigate } from "react-router";
 import { Settings } from "./Settings";
+import { AppConfig, ConfigManager } from "./config";
+import { ConfigContext } from "./context";
 
 const appWindow = new Window("main");
 
-const TitleBar = ({
-  darkMode,
-  setDarkMode,
-}: {
-  darkMode: boolean;
-  setDarkMode: any;
-}) => {
+const TitleBar = () => {
   let navigate = useNavigate();
   return (
     <div
@@ -45,7 +41,7 @@ const TitleBar = ({
         }}
         onClick={() => navigate("/")}
       />
-      <Switch
+      {/* <Switch
         style={{
           color: "var(--semi-color-text-1)",
           marginRight: "12px",
@@ -61,7 +57,7 @@ const TitleBar = ({
           }
         }}
         defaultChecked={darkMode}
-      />
+      /> */}
 
       <Button
         theme='borderless'
@@ -99,9 +95,12 @@ const ErrOnDatafolder = () => {
 };
 
 const App = () => {
-  const [flag, setFlag] = useState(true);
+  const [onChange, setOnChange] = useState(true);
   const [dataFolder, setDataFolder] = useState("");
-  const [darkMode, setDarkMode] = useState(true);
+  const [config, setConfig] = useState(
+    new ConfigManager<AppConfig>(new AppConfig())
+  );
+
   const get_datafolder_or_init = async () => {
     let res;
     try {
@@ -109,7 +108,7 @@ const App = () => {
     } catch (e) {
       res = await appDataDir();
       Notification.error({
-        content: `路径 ${e} 不合法或不存在，将初始化`,
+        content: `路径 ${e} 不合法或不存在，将初始化为 ${res}`,
         duration: 10,
         theme: "light",
         position: "top",
@@ -119,6 +118,14 @@ const App = () => {
     return res;
   };
 
+  // 当 `dataFolder` 改变之后重新读取配置
+  useMemo(() => {
+    invoke<string>("get_global_config").then((v) =>
+      setConfig(new ConfigManager<AppConfig>(v))
+    );
+  }, [dataFolder]);
+
+  // 每次都尝试读取 `dataFolder` 并设置
   get_datafolder_or_init()
     .then((v) => {
       setDataFolder(v);
@@ -127,12 +134,15 @@ const App = () => {
     .catch((e) => console.log(e));
 
   return (
-    <>
-      <TitleBar darkMode={darkMode} setDarkMode={setDarkMode} />
+    <ConfigContext.Provider value={config}>
+      <TitleBar />
       <Routes>
-        <Route path='*' element={<MainLayout darkMode={darkMode} />} />
+        <Route
+          path='*'
+          element={<MainLayout onChange={onChange} setOnChange={setOnChange} />}
+        />
       </Routes>
-    </>
+    </ConfigContext.Provider>
   );
 };
 

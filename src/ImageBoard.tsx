@@ -8,7 +8,7 @@ import {
 } from "@douyinfe/semi-ui";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
-export const ImageBoard = ({ darkMode }: { darkMode: boolean }) => {
+export const ImageBoard = () => {
   const [imgList, setImgList] = useState<string[]>([]);
   const [localPath, setLocalPath] = useState("");
   const [visible, setVisible] = useState(false);

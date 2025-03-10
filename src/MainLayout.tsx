@@ -1,15 +1,19 @@
 import { IconFolder, IconSetting } from "@douyinfe/semi-icons";
 import { IconBadge, IconForm, IconTree } from "@douyinfe/semi-icons-lab";
 import { Layout, Nav } from "@douyinfe/semi-ui";
-import { useState } from "react";
 
 import { ImageBoard } from "./ImageBoard";
 import { Route, Routes, useNavigate } from "react-router";
 import { Settings } from "./Settings";
 
-export const MainLayout = ({ darkMode }: { darkMode: boolean }) => {
+export const MainLayout = ({
+  onChange,
+  setOnChange,
+}: {
+  onChange: boolean;
+  setOnChange: any;
+}) => {
   const { Footer, Sider, Content } = Layout;
-  const [settingVisible, setSettingVisible] = useState(false);
   const navigate = useNavigate();
   return (
     <>
@@ -61,18 +65,14 @@ export const MainLayout = ({ darkMode }: { darkMode: boolean }) => {
           }}
         >
           <Routes>
+            <Route path='/folder' element={<ImageBoard />} />
             <Route
-              path='/folder'
-              element={<ImageBoard darkMode={darkMode} />}
+              path='/settings'
+              element={
+                <Settings onChange={onChange} setOnChange={setOnChange} />
+              }
             />
-            <Route path='/settings' element={<Settings />} />
           </Routes>
-
-          {/* <SettingPanel
-            visible={settingVisible}
-            setVisible={setSettingVisible}
-            store={store}
-          /> */}
         </Content>
       </Layout>
 
