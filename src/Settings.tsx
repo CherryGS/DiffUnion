@@ -1,3 +1,6 @@
+import { CSSProperties, useContext, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+
 import {
   Button,
   ButtonGroup,
@@ -5,46 +8,64 @@ import {
   Divider,
   Input,
   Space,
+  Switch,
   Typography,
 } from "@douyinfe/semi-ui";
+import { CardProps } from "@douyinfe/semi-ui/lib/es/card";
+import { SpaceProps } from "@douyinfe/semi-ui/lib/es/space";
+
 import { invoke } from "@tauri-apps/api/core";
-import { useContext, useMemo, useState } from "react";
+
 import { ConfigContext } from "./context";
-import { useNavigate } from "react-router";
 
-const DataFolderInput = () => {
-  const [text, setText] = useState("");
-  const { Text } = Typography;
+interface SettingCardProps {
+  card?: CardProps;
+  space?: SpaceProps;
+  cont: (() => JSX.Element)[];
+}
 
-  useMemo(() => {
-    invoke<string>("get_datafolder").then((v) => setText(v));
-  }, []);
+const SettingLine = ({
+  left,
+  right,
+}: {
+  left: JSX.Element;
+  right: JSX.Element;
+}) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      <div>{left}</div>
+      <div style={{ marginLeft: "auto" }}>{right}</div>
+    </div>
+  );
+};
+
+const SettingCard = (op: SettingCardProps) => {
+  if (op.card === undefined) op.card = {};
+  if (op.card.style === undefined) op.card.style = {};
+  op.card.style["width"] = "-webkit-fill-available";
+  if (op.space === undefined) op.space = {};
+  if (op.space.style === undefined) op.space.style = {};
+  op.space.style["width"] = "-webkit-fill-available";
+
+  let cont = new Array();
+  op.cont.forEach((V, i) => {
+    if (i !== 0) {
+      cont.push(<Divider key={i * 2} />);
+    }
+    cont.push(<V key={i * 2 + 1} />);
+  });
 
   return (
-    <Card
-      title='数据'
-      shadows='hover'
-      style={{ width: "-webkit-fill-available" }}
-    >
-      <Space vertical style={{ width: "-webkit-fill-available" }}>
-        <div
-          style={{
-            display: "flex",
-            position: "sticky",
-            top: 0,
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          <Text strong>数据目录</Text>
-          <Input
-            disabled
-            value={text}
-            style={{ width: "fit-content", marginLeft: "auto" }}
-          />
-        </div>
-        <Divider />
+    <Card {...op.card}>
+      <Space vertical {...op.space}>
+        {cont}
       </Space>
     </Card>
   );
@@ -53,9 +74,22 @@ const DataFolderInput = () => {
 export const Settings = () => {
   const config = useContext(ConfigContext);
   const navigate = useNavigate();
+
   return (
     <Space vertical style={{ width: "100%" }}>
-      <DataFolderInput />
+      <SettingCard
+        card={{
+          title: "Interface",
+          style: { width: "-webkit-fill-available" },
+        }}
+        space={{ style: { width: "-webkit-fill-available" } }}
+        cont={[IF_DarkMode]}
+      />
+      <SettingCard
+        card={{ title: "Data", style: { width: "-webkit-fill-available" } }}
+        space={{ style: { width: "-webkit-fill-available" } }}
+        cont={[Data_DataFolder]}
+      />
       <Card style={{ width: "-webkit-fill-available" }}>
         <ButtonGroup>
           <Button
@@ -68,9 +102,8 @@ export const Settings = () => {
 
           <Button
             onClick={async () => {
-              config.save();
               await invoke("set_global_config", {
-                v: JSON.stringify(config.stable),
+                v: config.save(),
               });
               navigate(0);
             }}
@@ -80,5 +113,44 @@ export const Settings = () => {
         </ButtonGroup>
       </Card>
     </Space>
+  );
+};
+
+const IF_DarkMode = () => {
+  const { Text } = Typography;
+  const config = useContext(ConfigContext);
+  const [darkMode, setDarkMode] = useState(config.get("darkMode"));
+  return (
+    <SettingLine
+      left={<Text strong>黑暗模式</Text>}
+      right={
+        <Switch
+          checked={Boolean(darkMode)}
+          onChange={() => {
+            const v = darkMode ? 0 : 1;
+            setDarkMode(v);
+            config.set("darkMode", v);
+          }}
+        />
+      }
+    />
+  );
+};
+
+/**
+ * 数据目录
+ */
+const Data_DataFolder = () => {
+  const { Text } = Typography;
+  const [text, setText] = useState("");
+  useMemo(() => {
+    invoke<string>("get_datafolder").then((v) => setText(v));
+  }, []);
+
+  return (
+    <SettingLine
+      left={<Text strong>数据目录</Text>}
+      right={<Input disabled value={text} style={{ width: "fit-content" }} />}
+    />
   );
 };

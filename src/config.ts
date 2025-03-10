@@ -1,7 +1,7 @@
 export class WorkspaceConfig implements WorkspaceConfig {}
 
 export class AppConfig implements _AppConfig {
-  darkMode: boolean = true;
+  darkMode: number = 1;
   watchDirs: string[] = [];
   workspaces: string[] = [];
 }
@@ -51,12 +51,10 @@ export class ConfigManager<T> {
   }
 
   /**
-   * 应用修改并返回 JSON 格式化后数据，如果两者相等返回 bool 值 `true`
+   * 应用修改并返回 JSON 格式化后数据
    */
   save() {
     const a = JSON.stringify(this.latest);
-    const b = JSON.stringify(this.stable);
-    if (a == b) return true;
     this.stable = JSON.parse(a);
     return a;
   }

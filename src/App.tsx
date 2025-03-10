@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Route, Routes, useNavigate } from "react-router";
+import { Route, Routes, createBrowserRouter, useNavigate } from "react-router";
 
 import {
   IconHome,
@@ -13,6 +13,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Window } from "@tauri-apps/api/window";
 
+import { ImageBoard } from "./ImageBoard";
 import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
 import { AppConfig, ConfigManager } from "./config";
@@ -78,6 +79,10 @@ const TitleBar = () => {
   );
 };
 
+const Home = () => {
+  return <div>Home</div>;
+};
+
 const App = () => {
   const [dataFolder, setDataFolder] = useState<null | string>(null);
   const [config, setConfig] = useState(
@@ -107,8 +112,17 @@ const App = () => {
     if (dataFolder === null) return;
     invoke<string>("get_global_config").then((v) => {
       if (v === JSON.stringify(config.stable)) return;
-      let _x: AppConfig = JSON.parse(v);
-      setConfig(new ConfigManager(_x));
+      const _x: AppConfig = JSON.parse(v);
+      const _y = new AppConfig();
+      const _z: AppConfig = { ..._y, ..._x };
+      setConfig(new ConfigManager(_z));
+      while (v !== JSON.stringify(config.stable)) {
+        console.log(v);
+        console.log(JSON.stringify(config.stable));
+      }
+      invoke("set_global_config", {
+        v: config.save(),
+      }).then();
     });
   };
 
@@ -127,8 +141,11 @@ const App = () => {
     <ConfigContext.Provider value={config}>
       <TitleBar />
       <Routes>
-        <Route path="*" element={<MainLayout />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Home />} />
+          <Route path="/folder" element={<ImageBoard />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
       </Routes>
     </ConfigContext.Provider>
   );
