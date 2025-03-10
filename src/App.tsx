@@ -1,142 +1,137 @@
-import { IconMaximize, IconMinus, IconQuit } from "@douyinfe/semi-icons";
-import { Button, Input, Switch } from "@douyinfe/semi-ui";
+import {
+  IconHome,
+  IconMaximize,
+  IconMinus,
+  IconQuit,
+} from "@douyinfe/semi-icons";
+import { Button, Notification, Switch } from "@douyinfe/semi-ui";
+import { Window } from "@tauri-apps/api/window";
+import { useState } from "react";
+import { MainLayout } from "./MainLayout";
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
-import { Window } from "@tauri-apps/api/window";
-import { open } from "@tauri-apps/plugin-dialog";
-import {
-  create,
-  exists,
-  readTextFile,
-  writeTextFile,
-} from "@tauri-apps/plugin-fs";
-import { useEffect, useState } from "react";
-import { MainLayout } from "./MainLayout";
+import { Route, Routes, useNavigate } from "react-router";
+import { Settings } from "./Settings";
 
 const appWindow = new Window("main");
 
-const InitDatafolder = ({ path }: { path: string }) => {
-  const [dataFolder, setDataFolder] = useState(path);
+const TitleBar = ({
+  darkMode,
+  setDarkMode,
+}: {
+  darkMode: boolean;
+  setDarkMode: any;
+}) => {
+  let navigate = useNavigate();
   return (
-    <>
+    <div
+      data-tauri-drag-region
+      style={{
+        backgroundColor: "var(--semi-color-bg-1)",
+        display: "flex",
+        padding: "4px",
+        position: "sticky",
+        top: 0,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <Button
-        onClick={async () => {
-          const choose_folder = await open({
-            title: "请选择一个空文件夹或之前的数据文件夹",
-            directory: true,
-          });
-          if (choose_folder === null) return;
-
-          setDataFolder(choose_folder);
-
-          const config_file =
-            (await appDataDir()) + String.raw`\dataFolder.txt`;
-          await writeTextFile(config_file, choose_folder);
+        theme='borderless'
+        icon={<IconHome />}
+        style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
         }}
-      >
-        Open Directory
-      </Button>
-      <Input disabled value={dataFolder} />
-    </>
+        onClick={() => navigate("/")}
+      />
+      <Switch
+        style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
+          marginLeft: "auto",
+        }}
+        onChange={(c, _) => {
+          if (c) {
+            setDarkMode(true);
+            document.body.setAttribute("theme-mode", "dark");
+          } else {
+            setDarkMode(false);
+            document.body.removeAttribute("theme-mode");
+          }
+        }}
+        defaultChecked={darkMode}
+      />
+
+      <Button
+        theme='borderless'
+        icon={<IconMinus />}
+        style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
+        }}
+        onClick={() => appWindow.minimize()}
+      />
+      <Button
+        theme='borderless'
+        icon={<IconMaximize />}
+        style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
+        }}
+        onClick={() => appWindow.toggleMaximize()}
+      />
+      <Button
+        theme='borderless'
+        icon={<IconQuit />}
+        style={{
+          color: "var(--semi-color-text-1)",
+          marginRight: "12px",
+        }}
+        onClick={() => appWindow.close()}
+      />
+    </div>
   );
 };
 
-const get_data_path = async () => {
-  const file = (await appDataDir()) + String.raw`\dataFolder.txt`;
-  console.log(file);
-  const flag = await exists(file);
-  if (flag) {
-    return await readTextFile(file);
-  } else {
-    create(file);
-    return "";
-  }
+const ErrOnDatafolder = () => {
+  return <></>;
 };
 
 const App = () => {
   const [flag, setFlag] = useState(true);
-  const [dataPath, setDataPath] = useState("");
+  const [dataFolder, setDataFolder] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  const get_datafolder_or_init = async () => {
+    let res;
+    try {
+      res = await invoke<string>("get_datafolder");
+    } catch (e) {
+      res = await appDataDir();
+      Notification.error({
+        content: `路径 ${e} 不合法或不存在，将初始化`,
+        duration: 10,
+        theme: "light",
+        position: "top",
+      });
+      await invoke("set_datafolder", { v: res });
+    }
+    return res;
+  };
 
-  get_data_path()
-    .then((path) => {
-      if (path !== "") {
-        invoke<boolean>("check_data_path_satisfy", { path }).then((res) =>
-          setFlag(res)
-        );
-      } else setFlag(false);
-      setDataPath(path);
+  get_datafolder_or_init()
+    .then((v) => {
+      setDataFolder(v);
+      console.log(v);
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch((e) => console.log(e));
 
   return (
     <>
-      <div
-        data-tauri-drag-region
-        style={{
-          backgroundColor: "var(--semi-color-bg-1)",
-          display: "flex",
-          padding: "4px",
-          position: "sticky",
-          top: 0,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Switch
-          style={{
-            color: "var(--semi-color-text-1)",
-            marginRight: "12px",
-            marginLeft: "auto",
-          }}
-          onChange={(c, _) => {
-            if (c) {
-              setDarkMode(true);
-              document.body.setAttribute("theme-mode", "dark");
-            } else {
-              setDarkMode(false);
-              document.body.removeAttribute("theme-mode");
-            }
-          }}
-          defaultChecked={darkMode}
-        />
-
-        <Button
-          theme='borderless'
-          icon={<IconMinus />}
-          style={{
-            color: "var(--semi-color-text-1)",
-            marginRight: "12px",
-          }}
-          onClick={() => appWindow.minimize()}
-        />
-        <Button
-          theme='borderless'
-          icon={<IconMaximize />}
-          style={{
-            color: "var(--semi-color-text-1)",
-            marginRight: "12px",
-          }}
-          onClick={() => appWindow.toggleMaximize()}
-        />
-        <Button
-          theme='borderless'
-          icon={<IconQuit />}
-          style={{
-            color: "var(--semi-color-text-1)",
-            marginRight: "12px",
-          }}
-          onClick={() => appWindow.close()}
-        />
-      </div>
-
-      {flag ? (
-        <MainLayout path={dataPath} darkMode={darkMode} />
-      ) : (
-        <InitDatafolder path={dataPath} />
-      )}
+      <TitleBar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Routes>
+        <Route path='*' element={<MainLayout darkMode={darkMode} />} />
+      </Routes>
     </>
   );
 };

@@ -1,23 +1,16 @@
-import { IconSetting } from "@douyinfe/semi-icons";
+import { IconFolder, IconSetting } from "@douyinfe/semi-icons";
 import { IconBadge, IconForm, IconTree } from "@douyinfe/semi-icons-lab";
 import { Layout, Nav } from "@douyinfe/semi-ui";
-import { LazyStore } from "@tauri-apps/plugin-store";
 import { useState } from "react";
 
 import { ImageBoard } from "./ImageBoard";
-import { SettingPanel } from "./SettingPanel";
+import { Route, Routes, useNavigate } from "react-router";
+import { Settings } from "./Settings";
 
-export const MainLayout = ({
-  path,
-  darkMode,
-}: {
-  path: string;
-  darkMode: boolean;
-}) => {
+export const MainLayout = ({ darkMode }: { darkMode: boolean }) => {
   const { Footer, Sider, Content } = Layout;
   const [settingVisible, setSettingVisible] = useState(false);
-  const store = new LazyStore(path + "/store.json");
-
+  const navigate = useNavigate();
   return (
     <>
       <Layout
@@ -33,6 +26,11 @@ export const MainLayout = ({
             style={{ maxWidth: 220, height: "100%" }}
             defaultIsCollapsed={true}
           >
+            <Nav.Item
+              itemKey={"folder"}
+              text={"文件夹"}
+              icon={<IconFolder />}
+            />
             <Nav.Item itemKey={"union"} text={"活动管理"} icon={<IconForm />} />
             <Nav.Sub itemKey={"user"} text='用户管理' icon={<IconBadge />}>
               <Nav.Item itemKey={"active"} text={"活跃用户"} />
@@ -51,9 +49,7 @@ export const MainLayout = ({
               itemKey={"setting"}
               text={"设置"}
               icon={<IconSetting />}
-              onClick={() => {
-                setSettingVisible(true);
-              }}
+              onClick={() => navigate("/settings")}
             />
           </Nav>
         </Sider>
@@ -64,12 +60,19 @@ export const MainLayout = ({
             backgroundColor: "var(--semi-color-bg-0)",
           }}
         >
-          <ImageBoard darkMode={darkMode} />
-          <SettingPanel
+          <Routes>
+            <Route
+              path='/folder'
+              element={<ImageBoard darkMode={darkMode} />}
+            />
+            <Route path='/settings' element={<Settings />} />
+          </Routes>
+
+          {/* <SettingPanel
             visible={settingVisible}
             setVisible={setSettingVisible}
             store={store}
-          />
+          /> */}
         </Content>
       </Layout>
 

@@ -2,13 +2,6 @@ import { Form, Modal, TextArea } from "@douyinfe/semi-ui";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { useState } from "react";
 
-class AppConfig {
-  workDirs: string[];
-  constructor(workDirs: []) {
-    this.workDirs = workDirs;
-  }
-}
-
 export const SettingPanel = ({
   visible,
   setVisible,
