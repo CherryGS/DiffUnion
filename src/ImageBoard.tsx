@@ -101,7 +101,8 @@ export const ImageBoard = () => {
               setVisible(true);
             }}
             style={{
-              width: "10%",
+              // width: "15%",
+              width: "128px",
               aspectRatio: "1/1",
               margin: 8,
               background: `url(${convertFileSrc(

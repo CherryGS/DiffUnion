@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 
-import { IconFolder, IconSetting } from "@douyinfe/semi-icons";
+import { IconFolder, IconGridView, IconSetting } from "@douyinfe/semi-icons";
 import { Layout, Nav } from "@douyinfe/semi-ui";
 
 export const MainLayout = () => {
@@ -26,6 +26,12 @@ export const MainLayout = () => {
               text={"文件夹"}
               icon={<IconFolder />}
               onClick={() => navigate("/folder")}
+            />
+            <Nav.Item
+              itemKey={"workspace"}
+              text={"工作空间"}
+              icon={<IconGridView />}
+              onClick={() => navigate("/workspace")}
             />
             <Nav.Item
               itemKey={"setting"}

@@ -15,6 +15,7 @@ import { ImageBoard } from "./ImageBoard";
 import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
 import { useGlobalConfig } from "./utils";
+import { WsHome, WsLayout, WsPage } from "./worksapce";
 
 const appWindow = new Window("main");
 
@@ -111,6 +112,10 @@ const App = () => {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="folder" element={<ImageBoard />} />
+          <Route path="workspace" element={<WsLayout />}>
+            <Route index element={<WsHome />} />
+            <Route path=":path" element={<WsPage />} />
+          </Route>
           <Route path="settings" element={<Settings />} />
           <Route path="error" element={<ErrPage />} />
         </Route>

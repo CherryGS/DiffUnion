@@ -1,5 +1,7 @@
-use std::{collections::HashSet, fs::write, path::PathBuf, sync::OnceLock};
-use tauri::Manager;
+use std::{collections::HashSet, path::PathBuf, sync::OnceLock};
+use tauri::{AppHandle, Manager};
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 use walkdir::WalkDir;
 
 static APP_DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
@@ -14,10 +16,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             find_files_by_ext,
-            get_datafolder,
-            set_datafolder,
-            get_global_config,
-            set_global_config,
             read_text,
             write_text
         ])
@@ -63,56 +61,6 @@ fn find_files_by_ext(paths: Vec<&str>, exts: Vec<&str>) -> Vec<PathBuf> {
 }
 
 /**
- * 硬编码获取用户自定义数据目录
- */
-#[tauri::command()]
-fn get_datafolder() -> Result<PathBuf, PathBuf> {
-    let file = APP_DATA_DIR.get().unwrap().join("dataFolder.txt");
-    //当文件不存在时，创建
-    if file.is_file() == false {
-        write(&file, APP_DATA_DIR.get().unwrap().to_str().unwrap()).unwrap();
-    }
-
-    let data_folder = PathBuf::from(std::fs::read_to_string(file).unwrap());
-    if data_folder.is_dir() == false {
-        Err(data_folder)
-    } else {
-        Ok(data_folder)
-    }
-}
-
-/**
- * 硬编码修改用户自定义数据目录
- */
-#[tauri::command()]
-fn set_datafolder(v: &str) {
-    let path = APP_DATA_DIR.get().unwrap().join("dataFolder.txt");
-    write(&path, v).unwrap();
-}
-
-/**
- * 硬编码获取全局配置文件
- */
-#[tauri::command()]
-fn get_global_config() -> String {
-    let file = get_datafolder().unwrap().join("config.json");
-    //当文件不存在时，创建
-    if file.is_file() == false {
-        write(&file, "{}").unwrap();
-    }
-    std::fs::read_to_string(file).unwrap()
-}
-
-/**
- * 硬编码储存全局配置文件，
- */
-#[tauri::command]
-fn set_global_config(v: &str) {
-    let file = get_datafolder().unwrap().join("config.json");
-    std::fs::write(file, v).unwrap()
-}
-
-/**
  * 读取一个文本类型文件
  */
 #[tauri::command()]
@@ -141,4 +89,14 @@ fn write_text(file: PathBuf, cont: String) -> Result<(), String> {
             e
         )),
     }
+}
+
+#[tauri::command]
+async fn extract_metadata_png(app: AppHandle, file: String) {
+    let sidecar_command = app
+        .shell()
+        .sidecar("exif-tool")
+        .unwrap()
+        .args([&file.as_str(), "-j"]);
+    let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 }

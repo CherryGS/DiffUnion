@@ -19,6 +19,22 @@
     "store:default",
     "fs:default",
     "fs:allow-app-read",
-    "fs:allow-app-write"
+    "fs:allow-app-write",
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "args": [
+            {
+              "validator": "\\S+"
+            },
+            "-j"
+          ],
+          "cmd": "",
+          "name": "bin/exif-tool"
+        }
+      ]
+    }
   ]
 }
