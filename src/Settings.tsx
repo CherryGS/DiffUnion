@@ -1,10 +1,9 @@
+import { cloneDeep } from "lodash";
 import { useContext, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 
 import { IconMinus, IconPlusCircle } from "@douyinfe/semi-icons";
 import {
   Button,
-  ButtonGroup,
   Card,
   Divider,
   Input,
@@ -20,6 +19,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
 import { ConfigContext } from "./context";
+import { useGlobalConfig } from "./utils";
 
 interface SettingCardProps {
   card?: CardProps;
@@ -75,16 +75,7 @@ const SettingCard = (op: SettingCardProps) => {
   );
 };
 
-export const Settings = ({
-  onChange,
-  setOnChange,
-}: {
-  onChange: number;
-  setOnChange: any;
-}) => {
-  const config = useContext(ConfigContext);
-  const navigate = useNavigate();
-
+export const Settings = () => {
   return (
     <Space vertical style={{ width: "100%" }}>
       <SettingCard
@@ -98,14 +89,14 @@ export const Settings = ({
       <SettingCard
         card={{ title: "Data", style: { width: "-webkit-fill-available" } }}
         space={{ style: { width: "-webkit-fill-available" } }}
-        cont={[Data_WatchDirs, Data_DataFolder]}
+        cont={[]}
+        // cont={[Data_WatchDirs, Data_DataFolder]}
       />
-      <Card style={{ width: "-webkit-fill-available" }}>
+      {/* <Card style={{ width: "-webkit-fill-available" }}>
         <ButtonGroup>
           <Button
             onClick={() => {
-              config.cancle();
-              navigate("/");
+              config.m
             }}
           >
             取消
@@ -124,7 +115,7 @@ export const Settings = ({
             保存
           </Button>
         </ButtonGroup>
-      </Card>
+      </Card> */}
     </Space>
   );
 };
@@ -134,18 +125,21 @@ export const Settings = ({
  */
 const IF_DarkMode = () => {
   const { Text } = Typography;
-  const config = useContext(ConfigContext);
-  const [darkMode, setDarkMode] = useState(config.get("darkMode"));
+  const { config, dataDir: _ } = useGlobalConfig();
   return (
     <SettingLine
       left={<Text strong>黑暗模式</Text>}
       right={
         <Switch
-          checked={Boolean(darkMode)}
+          checked={Boolean(config.d?.darkMode)}
           onChange={() => {
-            const v = darkMode ? 0 : 1;
-            setDarkMode(v);
-            config.set("darkMode", v);
+            if (config.d === undefined) {
+              console.error(`config 不应为空\n ${config}`);
+              return;
+            }
+            let r = cloneDeep(config.d);
+            r.darkMode = config.d.darkMode ? 0 : 1;
+            config.update(r);
           }}
         />
       }
@@ -231,8 +225,9 @@ const Data_WatchDirs = () => {
  */
 const Data_Workspaces = () => {
   const { Text } = Typography;
-  const config = useContext(ConfigContext);
-  const [listSet, setListSet] = useState(new Set(config.get("workspaces")));
+  // const config = useContext(ConfigContext);
+  // const [listSet, setListSet] = useState(new Set(config.get("workspaces")));
+  const { config, dataDir: _ } = useGlobalConfig();
   return (
     <SettingLine
       left={
@@ -247,7 +242,8 @@ const Data_Workspaces = () => {
                 title: "请选择添加的工作目录",
                 directory: true,
               });
-              if (v === null || v in listSet) return;
+              if (v === null) return;
+              const s = new Set(config.d?.workspaces);
               listSet.add(v);
               config.set("workspaces", [...listSet]);
               setListSet(new Set(listSet));

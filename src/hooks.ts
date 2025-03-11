@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 export function useRaw<T>(
-  file: string | undefined,
+  file: string,
   encode: (v: T) => string,
   decode: (v: string) => T
 ) {
@@ -64,16 +64,17 @@ export function useRaw<T>(
   }, [debouncedSave]);
 
   return {
-    v: query.data,
+    d: query.data,
     q: query,
     m: mutation,
+    qc: queryClient,
 
-    updateData: (newData: T) => {
+    update: (newData: T) => {
       debouncedSave(newData);
     },
   };
 }
 
-export function useJson<T>(file: string | undefined) {
+export function useJson<T>(file: string) {
   return useRaw<T>(file, JSON.stringify, JSON.parse);
 }

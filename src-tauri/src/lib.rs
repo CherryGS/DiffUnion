@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::format, fs::write, path::PathBuf, sync::OnceLock};
+use std::{collections::HashSet, fs::write, path::PathBuf, sync::OnceLock};
 use tauri::Manager;
 use walkdir::WalkDir;
 

@@ -1,5 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 
 import {
@@ -20,6 +24,7 @@ import { Settings } from "./Settings";
 import { AppConfig, ConfigManager } from "./config";
 import { ConfigContext } from "./context";
 import { useJson, useRaw } from "./hooks";
+import { useGlobalConfig } from "./utils";
 
 const appWindow = new Window("main");
 
@@ -91,51 +96,38 @@ const ErrPage = () => {
 
 const App = () => {
   const navigate = useNavigate();
-  const _appDataDir = useQuery({
-    queryKey: ["appDataDir"],
-    queryFn: appDataDir,
-  });
-  const dataDir = useRaw<string>(
-    _appDataDir.data,
-    (v) => v,
-    (v) => v
-  );
+  const { config, dataDir: _ } = useGlobalConfig();
 
-  const config = useJson<AppConfig>(
-    dataDir.v === undefined ? undefined : dataDir.v + "/config.json"
-  );
+  useEffect(() => {
+    switch (config.q.status) {
+      case "success": {
+        // navigate("/");
 
-  const [onChange, setOnChange] = useState(0);
+        // 设置黑暗模式
+        if (config.d?.darkMode)
+          document.body.setAttribute("theme-mode", "dark");
+        else document.body.removeAttribute("theme-mode");
 
-  switch (config.q.status) {
-    case "success": {
-      navigate("/");
-
-      // 设置黑暗模式
-      if (config.v?.darkMode) document.body.setAttribute("theme-mode", "dark");
-      else document.body.removeAttribute("theme-mode");
-
-      break;
+        break;
+      }
+      default: {
+        navigate("/error");
+      }
     }
-    default: {
-    }
-  }
+  }, [config.d]);
 
   return (
-    <ConfigContext.Provider value={config.v}>
+    <>
       <TitleBar />
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="folder" element={<ImageBoard />} />
-          <Route
-            path="settings"
-            element={<Settings onChange={onChange} setOnChange={setOnChange} />}
-          />
+          <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="/error" element={<ErrPage />} />
       </Routes>
-    </ConfigContext.Provider>
+    </>
   );
 };
 
