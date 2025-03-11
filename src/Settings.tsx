@@ -1,4 +1,4 @@
-import { CSSProperties, useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import {
@@ -71,7 +71,13 @@ const SettingCard = (op: SettingCardProps) => {
   );
 };
 
-export const Settings = () => {
+export const Settings = ({
+  onChange,
+  setOnChange,
+}: {
+  onChange: number;
+  setOnChange: any;
+}) => {
   const config = useContext(ConfigContext);
   const navigate = useNavigate();
 
@@ -95,6 +101,7 @@ export const Settings = () => {
           <Button
             onClick={() => {
               config.cancle();
+              navigate(0);
             }}
           >
             取消
@@ -105,7 +112,7 @@ export const Settings = () => {
               await invoke("set_global_config", {
                 v: config.save(),
               });
-              navigate(0);
+              setOnChange(onChange + 1);
             }}
           >
             保存
@@ -116,6 +123,9 @@ export const Settings = () => {
   );
 };
 
+/**
+ * 黑暗模式
+ */
 const IF_DarkMode = () => {
   const { Text } = Typography;
   const config = useContext(ConfigContext);

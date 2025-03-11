@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Route, Routes, createBrowserRouter, useNavigate } from "react-router";
+import { useMemo, useState } from "react";
+import { Route, Routes, useNavigate } from "react-router";
 
 import {
   IconHome,
@@ -88,6 +88,7 @@ const App = () => {
   const [config, setConfig] = useState(
     new ConfigManager<AppConfig>(new AppConfig())
   );
+  const [onChange, setOnChange] = useState(0);
 
   const get_datafolder_or_init = async () => {
     let res;
@@ -106,27 +107,22 @@ const App = () => {
     return res;
   };
 
-  // 重新读取配置
-  const load_config = () => {
-    console.log(`Load config from ${dataFolder}`);
+  useMemo(() => {
     if (dataFolder === null) return;
+    console.log(`Load config from ${dataFolder}`);
     invoke<string>("get_global_config").then((v) => {
-      if (v === JSON.stringify(config.stable)) return;
-      const _x: AppConfig = JSON.parse(v);
-      const _y = new AppConfig();
-      const _z: AppConfig = { ..._y, ..._x };
-      setConfig(new ConfigManager(_z));
-      while (v !== JSON.stringify(config.stable)) {
-        console.log(v);
-        console.log(JSON.stringify(config.stable));
-      }
-      invoke("set_global_config", {
-        v: config.save(),
-      }).then();
+      setConfig(
+        new ConfigManager<AppConfig>({
+          ...new AppConfig(),
+          ...JSON.parse(v),
+        })
+      );
     });
-  };
+  }, [dataFolder]);
 
-  load_config();
+  // 设置黑暗模式
+  if (config.get("darkMode")) document.body.setAttribute("theme-mode", "dark");
+  else document.body.removeAttribute("theme-mode");
 
   // 每次都尝试读取 `dataFolder` 并设置
   get_datafolder_or_init()
@@ -143,8 +139,11 @@ const App = () => {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
-          <Route path="/folder" element={<ImageBoard />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="folder" element={<ImageBoard />} />
+          <Route
+            path="settings"
+            element={<Settings onChange={onChange} setOnChange={setOnChange} />}
+          />
         </Route>
       </Routes>
     </ConfigContext.Provider>

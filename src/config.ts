@@ -1,6 +1,7 @@
 export class WorkspaceConfig implements WorkspaceConfig {}
 
 export class AppConfig implements _AppConfig {
+  time: number = 0;
   darkMode: number = 1;
   watchDirs: string[] = [];
   workspaces: string[] = [];
@@ -13,7 +14,7 @@ export class AppConfig implements _AppConfig {
  *
  * 请确保在调用 `save` 方法后进行更新或页面重载
  */
-export class ConfigManager<T> {
+export class ConfigManager<T extends _AbsConfig> {
   latest: T;
   stable: T;
 
@@ -48,6 +49,7 @@ export class ConfigManager<T> {
    */
   set<K extends keyof T>(k: K, v: any) {
     this.latest[k] = JSON.parse(JSON.stringify(v));
+    this.latest.time = new Date().getTime();
   }
 
   /**
@@ -65,5 +67,9 @@ export class ConfigManager<T> {
   cancle() {
     const a = JSON.stringify(this.stable);
     this.latest = JSON.parse(a);
+  }
+
+  eq(o: typeof this) {
+    return JSON.stringify(this.stable) == JSON.stringify(o.stable);
   }
 }
