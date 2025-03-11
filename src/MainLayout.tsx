@@ -1,7 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 
 import { IconFolder, IconSetting } from "@douyinfe/semi-icons";
-import { IconBadge, IconForm, IconTree } from "@douyinfe/semi-icons-lab";
 import { Layout, Nav } from "@douyinfe/semi-ui";
 
 export const MainLayout = () => {

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 
@@ -18,6 +19,7 @@ import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
 import { AppConfig, ConfigManager } from "./config";
 import { ConfigContext } from "./context";
+import { useJson, useRaw } from "./hooks";
 
 const appWindow = new Window("main");
 
@@ -83,58 +85,44 @@ const Home = () => {
   return <div>Home</div>;
 };
 
+const ErrPage = () => {
+  return <div>Error</div>;
+};
+
 const App = () => {
-  const [dataFolder, setDataFolder] = useState<null | string>(null);
-  const [config, setConfig] = useState(
-    new ConfigManager<AppConfig>(new AppConfig())
+  const navigate = useNavigate();
+  const _appDataDir = useQuery({
+    queryKey: ["appDataDir"],
+    queryFn: appDataDir,
+  });
+  const dataDir = useRaw<string>(
+    _appDataDir.data,
+    (v) => v,
+    (v) => v
   );
+
+  const config = useJson<AppConfig>(
+    dataDir.v === undefined ? undefined : dataDir.v + "/config.json"
+  );
+
   const [onChange, setOnChange] = useState(0);
 
-  const get_datafolder_or_init = async () => {
-    let res;
-    try {
-      res = await invoke<string>("get_datafolder");
-    } catch (e) {
-      res = await appDataDir();
-      Notification.error({
-        content: `路径 ${e} 不合法或不存在，将初始化为 ${res}`,
-        duration: 10,
-        theme: "light",
-        position: "top",
-      });
-      await invoke("set_datafolder", { v: res });
+  switch (config.q.status) {
+    case "success": {
+      navigate("/");
+
+      // 设置黑暗模式
+      if (config.v?.darkMode) document.body.setAttribute("theme-mode", "dark");
+      else document.body.removeAttribute("theme-mode");
+
+      break;
     }
-    return res;
-  };
-
-  useMemo(() => {
-    if (dataFolder === null) return;
-    console.log(`Load config from ${dataFolder}`);
-    invoke<string>("get_global_config").then((v) => {
-      setConfig(
-        new ConfigManager<AppConfig>({
-          ...new AppConfig(),
-          ...JSON.parse(v),
-        })
-      );
-    });
-  }, [dataFolder]);
-
-  // 设置黑暗模式
-  if (config.get("darkMode")) document.body.setAttribute("theme-mode", "dark");
-  else document.body.removeAttribute("theme-mode");
-
-  // 每次都尝试读取 `dataFolder` 并设置
-  get_datafolder_or_init()
-    .then((v) => {
-      if (v === dataFolder) return;
-      setDataFolder(v);
-      console.log(`DataFolder set to ${v}`);
-    })
-    .catch((e) => console.log(e));
+    default: {
+    }
+  }
 
   return (
-    <ConfigContext.Provider value={config}>
+    <ConfigContext.Provider value={config.v}>
       <TitleBar />
       <Routes>
         <Route path="/" element={<MainLayout />}>
@@ -145,6 +133,7 @@ const App = () => {
             element={<Settings onChange={onChange} setOnChange={setOnChange} />}
           />
         </Route>
+        <Route path="/error" element={<ErrPage />} />
       </Routes>
     </ConfigContext.Provider>
   );

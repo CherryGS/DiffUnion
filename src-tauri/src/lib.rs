@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs::write, path::PathBuf, sync::OnceLock};
+use std::{collections::HashSet, fmt::format, fs::write, path::PathBuf, sync::OnceLock};
 use tauri::Manager;
 use walkdir::WalkDir;
 
@@ -17,7 +17,9 @@ pub fn run() {
             get_datafolder,
             set_datafolder,
             get_global_config,
-            set_global_config
+            set_global_config,
+            read_text,
+            write_text
         ])
         .setup(|app| {
             // 初始化应用数据目录并保存
@@ -68,7 +70,7 @@ fn get_datafolder() -> Result<PathBuf, PathBuf> {
     let file = APP_DATA_DIR.get().unwrap().join("dataFolder.txt");
     //当文件不存在时，创建
     if file.is_file() == false {
-        write(&file, "").unwrap();
+        write(&file, APP_DATA_DIR.get().unwrap().to_str().unwrap()).unwrap();
     }
 
     let data_folder = PathBuf::from(std::fs::read_to_string(file).unwrap());
@@ -108,4 +110,35 @@ fn get_global_config() -> String {
 fn set_global_config(v: &str) {
     let file = get_datafolder().unwrap().join("config.json");
     std::fs::write(file, v).unwrap()
+}
+
+/**
+ * 读取一个文本类型文件
+ */
+#[tauri::command()]
+fn read_text(file: PathBuf) -> Result<String, String> {
+    match std::fs::read_to_string(&file) {
+        Ok(cont) => Ok(cont),
+        Err(e) => Err(format!(
+            "文本文件 {} 读取失败.\n {}",
+            file.to_str().unwrap(),
+            e
+        )),
+    }
+}
+
+/**
+ * 写入一个文本类型文件
+ */
+#[tauri::command()]
+fn write_text(file: PathBuf, cont: String) -> Result<(), String> {
+    match std::fs::write(&file, &cont) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!(
+            "写入文件 {} 失败.\n {}\n {}",
+            file.to_str().unwrap(),
+            cont,
+            e
+        )),
+    }
 }
