@@ -25,6 +25,7 @@ export const MainLayout = () => {
               itemKey={"folder"}
               text={"文件夹"}
               icon={<IconFolder />}
+              onClick={() => navigate("/folder")}
             />
             <Nav.Item
               itemKey={"setting"}

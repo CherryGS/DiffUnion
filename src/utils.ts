@@ -19,9 +19,15 @@ export const useGlobalConfig = () => {
       }
     },
   });
-  console.log(dataDir);
   const config = useJson<AppConfig>(dataDir.data + "/config.json");
-  console.log(config);
 
   return { config, dataDir };
+};
+
+export function clone_and_change<T>(x: T, o: Partial<T>): T {
+  return { ...x, ...o };
+}
+
+export const time = () => {
+  return Date.now();
 };

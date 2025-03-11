@@ -1,5 +1,4 @@
 import { cloneDeep } from "lodash";
-import { useContext, useMemo, useState } from "react";
 
 import { IconMinus, IconPlusCircle } from "@douyinfe/semi-icons";
 import {
@@ -15,11 +14,9 @@ import {
 import { CardProps } from "@douyinfe/semi-ui/lib/es/card";
 import { SpaceProps } from "@douyinfe/semi-ui/lib/es/space";
 
-import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
-import { ConfigContext } from "./context";
-import { useGlobalConfig } from "./utils";
+import { clone_and_change, useGlobalConfig } from "./utils";
 
 interface SettingCardProps {
   card?: CardProps;
@@ -89,33 +86,8 @@ export const Settings = () => {
       <SettingCard
         card={{ title: "Data", style: { width: "-webkit-fill-available" } }}
         space={{ style: { width: "-webkit-fill-available" } }}
-        cont={[]}
-        // cont={[Data_WatchDirs, Data_DataFolder]}
+        cont={[Data_WatchDirs, Data_Workspaces, Data_DataFolder]}
       />
-      {/* <Card style={{ width: "-webkit-fill-available" }}>
-        <ButtonGroup>
-          <Button
-            onClick={() => {
-              config.m
-            }}
-          >
-            取消
-          </Button>
-
-          <Button
-            onClick={async () => {
-              const r = config.save();
-              await invoke("set_global_config", {
-                v: r,
-              });
-              setOnChange(onChange + 1);
-              console.log(`配置文件保存成功\n${r}`);
-            }}
-          >
-            保存
-          </Button>
-        </ButtonGroup>
-      </Card> */}
     </Space>
   );
 };
@@ -152,15 +124,13 @@ const IF_DarkMode = () => {
  */
 const Data_DataFolder = () => {
   const { Text } = Typography;
-  const [text, setText] = useState("");
-  useMemo(() => {
-    invoke<string>("get_datafolder").then((v) => setText(v));
-  }, []);
-
+  const { config: _, dataDir } = useGlobalConfig();
   return (
     <SettingLine
       left={<Text strong>数据目录</Text>}
-      right={<Input disabled value={text} style={{ width: "fit-content" }} />}
+      right={
+        <Input disabled value={dataDir.data} style={{ width: "fit-content" }} />
+      }
     />
   );
 };
@@ -170,33 +140,37 @@ const Data_DataFolder = () => {
  */
 const Data_WatchDirs = () => {
   const { Text } = Typography;
-  const config = useContext(ConfigContext);
-  const [listSet, setListSet] = useState(new Set(config.get("watchDirs")));
+  const { config, dataDir: _ } = useGlobalConfig();
   return (
     <SettingLine
       left={
         <div>
-          <Text strong>监听目录</Text>
+          <Text strong>监视目录</Text>
           <Button
             type="primary"
             theme="borderless"
             icon={<IconPlusCircle />}
             onClick={async () => {
               const v = await open({
-                title: "请选择添加的监听目录",
+                title: "请选择添加的监视目录",
                 directory: true,
               });
-              if (v === null || v in listSet) return;
-              listSet.add(v);
-              config.set("watchDirs", [...listSet]);
-              setListSet(new Set(listSet));
+              if (v === null) return;
+              if (config.d === undefined) {
+                console.error(`config 不应为空\n ${config}`);
+                return;
+              }
+              const s = new Set(config.d.watchDirs);
+              if (v in s) return;
+              s.add(v);
+              config.update(clone_and_change(config.d, { watchDirs: [...s] }));
             }}
           />
         </div>
       }
       right={
         <List
-          dataSource={[...listSet]}
+          dataSource={config.d?.watchDirs ? [...config.d.watchDirs] : []}
           split={false}
           style={{ display: "flex", flexWrap: "wrap" }}
           renderItem={(item) => (
@@ -206,9 +180,15 @@ const Data_WatchDirs = () => {
                 theme="borderless"
                 icon={<IconMinus />}
                 onClick={() => {
-                  listSet.delete(item);
-                  config.set("watchDirs", [...listSet]);
-                  setListSet(new Set(listSet));
+                  if (config.d === undefined) {
+                    console.error(`config 不应为空\n ${config}`);
+                    return;
+                  }
+                  const s = new Set(config.d.watchDirs);
+                  s.delete(item);
+                  config.update(
+                    clone_and_change(config.d, { watchDirs: [...s] })
+                  );
                 }}
               />
               {item}
@@ -225,8 +205,6 @@ const Data_WatchDirs = () => {
  */
 const Data_Workspaces = () => {
   const { Text } = Typography;
-  // const config = useContext(ConfigContext);
-  // const [listSet, setListSet] = useState(new Set(config.get("workspaces")));
   const { config, dataDir: _ } = useGlobalConfig();
   return (
     <SettingLine
@@ -243,17 +221,21 @@ const Data_Workspaces = () => {
                 directory: true,
               });
               if (v === null) return;
-              const s = new Set(config.d?.workspaces);
-              listSet.add(v);
-              config.set("workspaces", [...listSet]);
-              setListSet(new Set(listSet));
+              if (config.d === undefined) {
+                console.error(`config 不应为空\n ${config}`);
+                return;
+              }
+              const s = new Set(config.d.workspaces);
+              if (v in s) return;
+              s.add(v);
+              config.update(clone_and_change(config.d, { workspaces: [...s] }));
             }}
           />
         </div>
       }
       right={
         <List
-          dataSource={[...listSet]}
+          dataSource={config.d?.workspaces ? [...config.d.workspaces] : []}
           split={false}
           style={{ display: "flex", flexWrap: "wrap" }}
           renderItem={(item) => (
@@ -263,9 +245,15 @@ const Data_Workspaces = () => {
                 theme="borderless"
                 icon={<IconMinus />}
                 onClick={() => {
-                  listSet.delete(item);
-                  config.set("workspaces", [...listSet]);
-                  setListSet(new Set(listSet));
+                  if (config.d === undefined) {
+                    console.error(`config 不应为空\n ${config}`);
+                    return;
+                  }
+                  const s = new Set(config.d.workspaces);
+                  s.delete(item);
+                  config.update(
+                    clone_and_change(config.d, { workspaces: [...s] })
+                  );
                 }}
               />
               {item}

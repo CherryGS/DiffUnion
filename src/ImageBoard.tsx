@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Button,
   Divider,
@@ -6,37 +8,44 @@ import {
   SideSheet,
   TextArea,
 } from "@douyinfe/semi-ui";
+
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { useState } from "react";
+
+import { useGlobalConfig } from "./utils";
+
+let k: string = "";
+let v: string[] = [];
+
 export const ImageBoard = () => {
   const [imgList, setImgList] = useState<string[]>([]);
-  const [localPath, setLocalPath] = useState("");
   const [visible, setVisible] = useState(false);
   const [imgOnClick, setImgOnClick] = useState("");
+  const { config, dataDir: _ } = useGlobalConfig();
 
-  function getImages() {
-    const paths = localPath.split("\n");
+  useEffect(() => {
+    if (k === JSON.stringify(config.d?.watchDirs)) {
+      setImgList(v);
+      return;
+    }
+    console.log(`获取 watchDirs 内图片中\n ${config.d?.watchDirs}`);
+    // console.log(`↓ ${Date.now()}`);
     invoke<string[]>("find_files_by_ext", {
-      paths,
+      paths: config.d?.watchDirs,
       exts: ["jpg", "jpeg", "png"],
-    }).then((res) => setImgList(res));
-  }
+    }).then((res) => {
+      v = res;
+      setImgList(res);
+      k = JSON.stringify(config.d?.watchDirs);
+      // console.log(`↑ ${Date.now()}`);
+    });
+  }, [config.d?.watchDirs]);
 
   return (
     <>
-      <Button onClick={getImages}>Get Images</Button>
-
-      <TextArea
-        autosize
-        rows={1}
-        onChange={(v) => setLocalPath(v)}
-        value={localPath}
-      />
-
       <SideSheet
         visible={visible}
         onCancel={() => setVisible(false)}
-        width='30%'
+        width="30%"
         closeOnEsc={true}
       >
         <Image
@@ -49,7 +58,7 @@ export const ImageBoard = () => {
             objectPosition: "center",
           }}
         />
-        <Divider margin='20px' children='INFO' />
+        <Divider margin="20px" children="INFO" />
       </SideSheet>
 
       <ImagePreview>
@@ -69,7 +78,7 @@ export const ImageBoard = () => {
               background: `url(${convertFileSrc(
                 path
               )}) no-repeat center center`,
-              border: `2px solid ${darkMode ? "#fff" : "#000"}`,
+              border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
             }}
             imgStyle={{
               width: "100%",

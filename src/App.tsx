@@ -1,9 +1,4 @@
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 
 import {
@@ -12,18 +7,13 @@ import {
   IconMinus,
   IconQuit,
 } from "@douyinfe/semi-icons";
-import { Button, Notification } from "@douyinfe/semi-ui";
+import { Button } from "@douyinfe/semi-ui";
 
-import { invoke } from "@tauri-apps/api/core";
-import { appDataDir } from "@tauri-apps/api/path";
 import { Window } from "@tauri-apps/api/window";
 
 import { ImageBoard } from "./ImageBoard";
 import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
-import { AppConfig, ConfigManager } from "./config";
-import { ConfigContext } from "./context";
-import { useJson, useRaw } from "./hooks";
 import { useGlobalConfig } from "./utils";
 
 const appWindow = new Window("main");
@@ -101,8 +91,6 @@ const App = () => {
   useEffect(() => {
     switch (config.q.status) {
       case "success": {
-        // navigate("/");
-
         // 设置黑暗模式
         if (config.d?.darkMode)
           document.body.setAttribute("theme-mode", "dark");
@@ -124,8 +112,8 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="folder" element={<ImageBoard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="error" element={<ErrPage />} />
         </Route>
-        <Route path="/error" element={<ErrPage />} />
       </Routes>
     </>
   );
