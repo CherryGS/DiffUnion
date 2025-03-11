@@ -1,20 +1,37 @@
+import { LRUCache } from "lru-cache";
 import { useEffect, useState } from "react";
 
 import {
-  Button,
+  Card,
   Divider,
   Image,
   ImagePreview,
   SideSheet,
-  TextArea,
 } from "@douyinfe/semi-ui";
 
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 
+import "./ImageBoard.css";
 import { useGlobalConfig } from "./utils";
 
-let k: string = "";
-let v: string[] = [];
+const cache = new LRUCache<string, string[]>({
+  max: 500,
+
+  // for use with tracking overall storage size
+  maxSize: 5000,
+  sizeCalculation: () => {
+    return 1;
+  },
+
+  // how long to live in ms
+  ttl: 1000 * 60 * 5,
+
+  // return stale items before removing from cache?
+  allowStale: false,
+
+  updateAgeOnGet: false,
+  updateAgeOnHas: false,
+});
 
 export const ImageBoard = () => {
   const [imgList, setImgList] = useState<string[]>([]);
@@ -23,19 +40,21 @@ export const ImageBoard = () => {
   const { config, dataDir: _ } = useGlobalConfig();
 
   useEffect(() => {
-    if (k === JSON.stringify(config.d?.watchDirs)) {
+    const k = JSON.stringify(config.d?.watchDirs);
+    const v = cache.get(k);
+    if (cache.has(k) && v !== undefined) {
       setImgList(v);
       return;
     }
+
     console.log(`获取 watchDirs 内图片中\n ${config.d?.watchDirs}`);
     // console.log(`↓ ${Date.now()}`);
     invoke<string[]>("find_files_by_ext", {
       paths: config.d?.watchDirs,
       exts: ["jpg", "jpeg", "png"],
     }).then((res) => {
-      v = res;
       setImgList(res);
-      k = JSON.stringify(config.d?.watchDirs);
+      cache.set(k, res);
       // console.log(`↑ ${Date.now()}`);
     });
   }, [config.d?.watchDirs]);
@@ -48,20 +67,30 @@ export const ImageBoard = () => {
         width="30%"
         closeOnEsc={true}
       >
-        <Image
-          src={imgOnClick}
-          style={{ width: "100%", textAlign: "center" }}
-          imgStyle={{
-            width: "100%",
-            maxWidth: 512,
-            objectFit: "contain",
-            objectPosition: "center",
-          }}
-        />
-        <Divider margin="20px" children="INFO" />
+        <Card>
+          <Image
+            src={imgOnClick}
+            style={{
+              width: "100%",
+              textAlign: "center",
+              aspectRatio: "1/1",
+              background: `url(${imgOnClick}) no-repeat center center`,
+              border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
+            }}
+            imgStyle={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center",
+              backdropFilter: "blur(8px)",
+            }}
+          />
+          <Divider margin="20px" children="INFO" />
+        </Card>
       </SideSheet>
 
-      <ImagePreview>
+      {/* 这里不能直接调用 `style` 所以用 `class+css` */}
+      <ImagePreview className={"ImageBoard"}>
         {imgList.map((path) => (
           <Image
             key={path}
@@ -74,7 +103,7 @@ export const ImageBoard = () => {
             style={{
               width: "10%",
               aspectRatio: "1/1",
-              margin: 16,
+              margin: 8,
               background: `url(${convertFileSrc(
                 path
               )}) no-repeat center center`,
