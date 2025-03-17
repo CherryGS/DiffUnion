@@ -1,6 +1,6 @@
-/** 该文件不应包含 tauri 的内容 */
+/// 该文件不应包含 tauri 的内容
+use fancy_regex::Regex;
 use rayon::prelude::*;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -46,7 +46,7 @@ pub fn use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
             compiled_patts
                 .iter()
                 .map(|j| {
-                    if let Some(x) = j.find(i) {
+                    if let Some(x) = j.find(i).unwrap() {
                         Some(x.as_str())
                     } else {
                         None
@@ -64,7 +64,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn test_extract_by_regex() {
+    fn test_use_regex() {
         let src = vec!["123abcABC", "你好"];
         let patts = vec![
             r"\d+".to_string(),
@@ -79,6 +79,6 @@ mod tests {
                 vec![Some("123"), Some("abc"), Some("ABC"), None],
                 vec![None, None, None, Some("你好")]
             ]
-        )
+        );
     }
 }
