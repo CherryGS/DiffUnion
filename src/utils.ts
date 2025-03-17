@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
+import { Command } from "@tauri-apps/plugin-shell";
 
 import { AppConfig } from "./config";
 import { useJson } from "./hooks";
@@ -25,9 +26,20 @@ export const useGlobalConfig = () => {
 };
 
 export function clone_and_change<T>(x: T, o: Partial<T>): T {
-  return { ...x, ...o };
+  return { ...JSON.parse(JSON.stringify(x)), ...o };
 }
 
 export const time = () => {
   return Date.now();
+};
+
+export const extract_img_metadata = async (file: string) => {
+  const command = Command.sidecar(String.raw`bin/exif-tool`, [`${file}`, "-j"]);
+  try {
+    const res = await command.execute();
+    return res.stdout.slice(1, -3);
+  } catch (e) {
+    console.error(command);
+    throw e;
+  }
 };

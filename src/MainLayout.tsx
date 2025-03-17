@@ -3,6 +3,8 @@ import { Outlet, useNavigate } from "react-router";
 import { IconFolder, IconGridView, IconSetting } from "@douyinfe/semi-icons";
 import { Layout, Nav } from "@douyinfe/semi-ui";
 
+import { invoke } from "@tauri-apps/api/core";
+
 export const MainLayout = () => {
   const { Sider, Content } = Layout;
   const navigate = useNavigate();
@@ -33,6 +35,17 @@ export const MainLayout = () => {
               icon={<IconGridView />}
               onClick={() => navigate("/workspace")}
             />
+            {/* <Nav.Item
+              itemKey={"test"}
+              text={"测试"}
+              onClick={async () => {
+                try {
+                  await invoke("extract_img_info", { file: "test" });
+                } catch (e) {
+                  console.log(e);
+                }
+              }}
+            /> */}
             <Nav.Item
               itemKey={"setting"}
               text={"设置"}

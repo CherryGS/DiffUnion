@@ -1,7 +1,8 @@
+pub mod utils;
+
 use std::{collections::HashSet, path::PathBuf, sync::OnceLock};
-use tauri::{AppHandle, Manager};
-use tauri_plugin_shell::process::CommandEvent;
-use tauri_plugin_shell::ShellExt;
+use tauri::Manager;
+use tauri_plugin_shell::{process::CommandEvent, ShellExt};
 use walkdir::WalkDir;
 
 static APP_DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
@@ -14,10 +15,12 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             find_files_by_ext,
             read_text,
-            write_text
+            write_text,
+            extract_img_info
         ])
         .setup(|app| {
             // 初始化应用数据目录并保存
@@ -92,11 +95,30 @@ fn write_text(file: PathBuf, cont: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn extract_metadata_png(app: AppHandle, file: String) {
-    let sidecar_command = app
-        .shell()
-        .sidecar("exif-tool")
-        .unwrap()
-        .args([&file.as_str(), "-j"]);
-    let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+async fn extract_img_info(app: tauri::AppHandle, file: String) {
+    let comm =
+        app.shell()
+            .sidecar("exif-tool")
+            .unwrap()
+            .args([file.as_str(), "-csv", "-Parameters"]);
+    let (mut _rx, mut _child) = comm.spawn().unwrap();
+    let mut res = String::new();
+    let mut count = 0;
+    while let Some(event) = _rx.recv().await {
+        match event {
+            CommandEvent::Stdout(output) => {
+                // 通过去掉前两行来规避掉 csv 格式的头和第一行 SourceFile
+                if count > 1 {
+                    res.push_str(&String::from_utf8(output).unwrap());
+                } else {
+                    count = count + 1;
+                }
+            }
+            CommandEvent::Stderr(output) => {
+                println!("{:?}", String::from_utf8(output))
+            }
+            _ => {}
+        }
+    }
+    println!("{}", res)
 }

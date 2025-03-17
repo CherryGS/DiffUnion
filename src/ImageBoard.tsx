@@ -6,13 +6,14 @@ import {
   Divider,
   Image,
   ImagePreview,
+  JsonViewer,
   SideSheet,
 } from "@douyinfe/semi-ui";
 
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 
 import "./ImageBoard.css";
-import { useGlobalConfig } from "./utils";
+import { extract_img_metadata, useGlobalConfig } from "./utils";
 
 const cache = new LRUCache<string, string[]>({
   max: 500,
@@ -38,6 +39,7 @@ export const ImageBoard = () => {
   const [visible, setVisible] = useState(false);
   const [imgOnClick, setImgOnClick] = useState("");
   const { config, dataDir: _ } = useGlobalConfig();
+  const [imgJson, setImgJson] = useState(`{"unknown": "unknown"}`);
 
   useEffect(() => {
     const k = JSON.stringify(config.d?.watchDirs);
@@ -86,6 +88,11 @@ export const ImageBoard = () => {
             }}
           />
           <Divider margin="20px" children="INFO" />
+          <JsonViewer
+            options={{ autoWrap: true }}
+            value={imgJson}
+            width={"100%"}
+          />
         </Card>
       </SideSheet>
 
@@ -96,13 +103,17 @@ export const ImageBoard = () => {
             key={path}
             src={convertFileSrc(path)}
             preview={false}
-            onClick={(e) => {
+            onClick={async (e) => {
               setImgOnClick(e.target.currentSrc);
               setVisible(true);
+              const json = await extract_img_metadata(path);
+              await invoke("extract_img_info", { file: path });
+              console.log(json);
+              setImgJson(json);
             }}
             style={{
-              // width: "15%",
-              width: "128px",
+              width: "15%",
+              // width: "128px",
               aspectRatio: "1/1",
               margin: 8,
               background: `url(${convertFileSrc(
