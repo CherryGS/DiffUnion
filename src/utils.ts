@@ -13,7 +13,7 @@ export const useGlobalConfig = () => {
     queryFn: async () => {
       try {
         const file = (await appDataDir()) + "/dataFolder.txt";
-        const res = await invoke<string>("read_text", { file });
+        const res = await invoke<string>("cmd_read_text", { file });
         return res;
       } catch (e) {
         return Promise.reject(`${e}`);
@@ -33,11 +33,24 @@ export const time = () => {
   return Date.now();
 };
 
-export const extract_img_metadata = async (file: string) => {
-  const command = Command.sidecar(String.raw`bin/exif-tool`, [`${file}`, "-j"]);
+type ExifJson = Array<
+  | { SourceFile: string; Parameters?: string; workflow?: string }
+  | { [k: string]: string }
+>;
+
+/**
+ * 获取给定路径的文件的 metadata
+ * @param paths 文件或文件夹名称，对于文件夹会递归获取其内文件
+ */
+export const extract_metadata = async (paths: string[]): Promise<ExifJson> => {
+  const command = Command.sidecar(String.raw`bin/exif-tool`, [
+    `${paths.join(" ")}`,
+    "-j",
+    "-r",
+  ]);
   try {
     const res = await command.execute();
-    return res.stdout.slice(1, -3);
+    return JSON.parse(res.stdout);
   } catch (e) {
     console.error(command);
     throw e;

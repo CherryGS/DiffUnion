@@ -24,9 +24,11 @@ static REGEX_CACHE: LazyLock<RwLock<HashMap<String, Regex>>> =
     LazyLock::new(|| RwLock::new(HashMap::new()));
 
 /**
+对于给定的 `src` 中的每一项，分别使用 `patts` 中的每一项作为 regex pattern 进行匹配并获取第一个匹配结果。
 
+通过全局 HashMap 缓存避免多次编译 pattern ，同时使用 rayon 库并以 `src` 为基本单位并行处理。
 */
-pub fn extract_by_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
+pub fn use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
     let mut lock = REGEX_CACHE.write().unwrap();
     for patt in patts.iter() {
         if !lock.contains_key(patt.as_str()) {
@@ -70,7 +72,7 @@ mod tests {
             r"[A-Z]+".to_string(),
             r"[\u4e00-\u9fa5]+".to_string(),
         ];
-        let res = extract_by_regex(src, patts);
+        let res = use_regex(src, patts);
         assert_eq!(
             res,
             vec![

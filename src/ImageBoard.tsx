@@ -13,7 +13,7 @@ import {
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 
 import "./ImageBoard.css";
-import { extract_img_metadata, useGlobalConfig } from "./utils";
+import { extract_metadata, useGlobalConfig } from "./utils";
 
 const cache = new LRUCache<string, string[]>({
   max: 500,
@@ -51,7 +51,7 @@ export const ImageBoard = () => {
 
     console.log(`获取 watchDirs 内图片中\n ${config.d?.watchDirs}`);
     // console.log(`↓ ${Date.now()}`);
-    invoke<string[]>("find_files_by_ext", {
+    invoke<string[]>("cmd_find_files_by_ext", {
       paths: config.d?.watchDirs,
       exts: ["jpg", "jpeg", "png"],
     }).then((res) => {
@@ -106,8 +106,7 @@ export const ImageBoard = () => {
             onClick={async (e) => {
               setImgOnClick(e.target.currentSrc);
               setVisible(true);
-              const json = await extract_img_metadata(path);
-              await invoke("extract_img_info", { file: path });
+              const json = await extract_metadata([path]);
               console.log(json);
               setImgJson(json);
             }}

@@ -14,8 +14,9 @@ import { Window } from "@tauri-apps/api/window";
 import { ImageBoard } from "./ImageBoard";
 import { MainLayout } from "./MainLayout";
 import { Settings } from "./Settings";
+import { TestHome, TestLayout } from "./Test";
+import { WsHome, WsLayout, WsPage } from "./Worksapce";
 import { useGlobalConfig } from "./utils";
-import { WsHome, WsLayout, WsPage } from "./worksapce";
 
 const appWindow = new Window("main");
 
@@ -118,6 +119,9 @@ const App = () => {
           </Route>
           <Route path="settings" element={<Settings />} />
           <Route path="error" element={<ErrPage />} />
+          <Route path="tests" element={<TestLayout />}>
+            <Route index element={<TestHome />} />
+          </Route>
         </Route>
       </Routes>
     </>

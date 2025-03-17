@@ -13,12 +13,12 @@ export function useRaw<T>(
 
   // 读取函数
   const fetchConfig = async (): Promise<T> => {
-    return invoke<string>("read_text", { file }).then((v) => decode(v));
+    return invoke<string>("cmd_read_text", { file }).then((v) => decode(v));
   };
 
   // 保存函数
   const saveConfig = async (config: T): Promise<void> => {
-    return invoke<string>("write_text", {
+    return invoke<string>("cmd_write_text", {
       file,
       cont: encode(config),
     }).then();
