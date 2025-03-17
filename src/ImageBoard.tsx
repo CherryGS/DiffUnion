@@ -2,12 +2,16 @@ import { LRUCache } from "lru-cache";
 import { useEffect, useState } from "react";
 
 import {
+  Button,
   Card,
+  Descriptions,
   Divider,
   Image,
   ImagePreview,
-  JsonViewer,
   SideSheet,
+  Space,
+  Tag,
+  Typography,
 } from "@douyinfe/semi-ui";
 
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -39,7 +43,8 @@ export const ImageBoard = () => {
   const [visible, setVisible] = useState(false);
   const [imgOnClick, setImgOnClick] = useState("");
   const { config, dataDir: _ } = useGlobalConfig();
-  const [imgJson, setImgJson] = useState(`{"unknown": "unknown"}`);
+  const [imgJson, setImgJson] = useState([[""]]);
+  const { Text } = Typography;
 
   useEffect(() => {
     const k = JSON.stringify(config.d?.watchDirs);
@@ -87,12 +92,33 @@ export const ImageBoard = () => {
               backdropFilter: "blur(8px)",
             }}
           />
-          <Divider margin="20px" children="INFO" />
-          <JsonViewer
-            options={{ autoWrap: true }}
-            value={imgJson}
-            width={"100%"}
+          {/* <Divider margin="20px" children="INFO" /> */}
+          <Divider
+            margin="20px"
+            children={<Button theme="borderless">Positive</Button>}
           />
+          <Text size="normal">{imgJson}</Text>
+          <Divider margin="20px" children="Negative" />
+          <Divider margin="20px" children="INFO" />
+          <Card>
+            <Descriptions>
+              <Descriptions.Item itemKey="LoRa">
+                <Space vertical>
+                  <Tag>
+                    {
+                      "<lora:[Illust][Shiiro0][C][Style] Artist_ma1ma1helmes_b:0.8>"
+                    }
+                  </Tag>
+                  <Tag>
+                    {
+                      "<lora:[Illust][Shiiro0][C][Style] Artist_ma1ma1helmes_b:0.8>"
+                    }
+                  </Tag>
+                </Space>
+              </Descriptions.Item>
+              <Descriptions.Item itemKey="Steps">10</Descriptions.Item>
+            </Descriptions>
+          </Card>
         </Card>
       </SideSheet>
 
@@ -107,8 +133,15 @@ export const ImageBoard = () => {
               setImgOnClick(e.target.currentSrc);
               setVisible(true);
               const json = await extract_metadata([path]);
-              console.log(json);
-              setImgJson(json);
+              const data = await invoke<Array<Array<string>>>("cmd_use_regex", {
+                src: [json[0].Parameters],
+                patts: [
+                  `(?s)^.+?(?=Negative prompt)`,
+                  // `(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)`,
+                ],
+              });
+              setImgJson(data);
+              console.log(json, data);
             }}
             style={{
               width: "15%",

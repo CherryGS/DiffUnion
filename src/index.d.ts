@@ -11,4 +11,15 @@ interface _AppConfig extends _AbsConfig {
   workspaces: string[];
 }
 
-interface WorkspaceConfig {}
+interface _Pattern {
+  /** 用于匹配正面提示词的 regex patt */
+  positivePatt: string;
+  /** 用于匹配负面提示词的 regex patt */
+  negativePatt: string;
+  [patt: string]: string | null;
+}
+
+interface _WorkspaceConfig extends _AbsConfig {
+  /** regex patterns */
+  patts: _Pattern;
+}
