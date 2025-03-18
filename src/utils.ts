@@ -4,7 +4,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Command } from "@tauri-apps/plugin-shell";
 
-import { AppConfig } from "./config";
 import { useJson } from "./hooks";
 
 export const useGlobalConfig = () => {
@@ -24,6 +23,8 @@ export const useGlobalConfig = () => {
 
   return { config, dataDir };
 };
+
+export const useWorkspaceConfig = () => {};
 
 export function clone_and_change<T>(x: T, o: Partial<T>): T {
   return { ...JSON.parse(JSON.stringify(x)), ...o };

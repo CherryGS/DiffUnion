@@ -6,7 +6,6 @@ import {
   Card,
   Descriptions,
   Divider,
-  Dropdown,
   Image,
   ImagePreview,
   SideSheet,
@@ -95,25 +94,9 @@ export const ImageBoard = () => {
           />
           <Divider margin="20px" children="Action" />
           <Space vertical>
-            <Dropdown
-              position="right"
-              render={
-                <Dropdown.Menu>
-                  {config.d ? (
-                    config.d.workspaces.map((d) => (
-                      <Dropdown.Item onClick={() => {}}>{d}</Dropdown.Item>
-                    ))
-                  ) : (
-                    <></>
-                  )}
-                </Dropdown.Menu>
-              }
-            >
-              <Button theme="borderless">
-                添加到 Workspace{" "}
-                {`(当前有 ${config.d ? config.d.workspaces.length : 0} 个 Workspace)`}
-              </Button>
-            </Dropdown>
+            <Button theme="borderless">
+              添加到 {`${config.d?.workspace}`}
+            </Button>
           </Space>
           <Divider
             margin="20px"

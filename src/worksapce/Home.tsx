@@ -15,7 +15,7 @@ export const Home = () => {
           <List
             bordered={false}
             split={false}
-            dataSource={config.d?.workspaces}
+            dataSource={config.d?.workspace}
             renderItem={(v) => (
               <List.Item>
                 <Button

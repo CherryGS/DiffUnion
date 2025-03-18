@@ -12,27 +12,30 @@ export function useRaw<T>(
   const queryClient = useQueryClient();
 
   // 读取函数
-  const fetchConfig = async (): Promise<T> => {
-    return invoke<string>("cmd_read_text", { file }).then((v) => decode(v));
+  const fetch = async (): Promise<T> => {
+    const v = await invoke<string>("cmd_read_text", { file });
+    return decode(v);
   };
 
   // 保存函数
-  const saveConfig = async (config: T): Promise<void> => {
-    return invoke<string>("cmd_write_text", {
+  const save = async (config: T): Promise<void> => {
+    await invoke<string>("cmd_write_text", {
       file,
       cont: encode(config),
-    }).then();
+    });
   };
 
-  const QK = ["config", file];
+  // 查询键
+  const QK = [file];
+
   // 查询数据
   const query = useQuery({
     queryKey: QK,
-    queryFn: fetchConfig,
+    queryFn: fetch,
   });
 
   const mutation = useMutation({
-    mutationFn: saveConfig,
+    mutationFn: save,
     // 当修改进行中时启用乐观更新
     onMutate: async (v) => {
       await queryClient.cancelQueries({ queryKey: QK });

@@ -208,57 +208,12 @@ const Data_Workspaces = () => {
   const { config, dataDir: _ } = useGlobalConfig();
   return (
     <SettingLine
-      left={
-        <div>
-          <Text strong>工作目录</Text>
-          <Button
-            type="primary"
-            theme="borderless"
-            icon={<IconPlusCircle />}
-            onClick={async () => {
-              const v = await open({
-                title: "请选择添加的工作目录",
-                directory: true,
-              });
-              if (v === null) return;
-              if (config.d === undefined) {
-                console.error(`config 不应为空\n ${config}`);
-                return;
-              }
-              const s = new Set(config.d.workspaces);
-              if (v in s) return;
-              s.add(v);
-              config.update(clone_and_change(config.d, { workspaces: [...s] }));
-            }}
-          />
-        </div>
-      }
+      left={<Text strong>工作空间</Text>}
       right={
-        <List
-          dataSource={config.d?.workspaces ? [...config.d.workspaces] : []}
-          split={false}
-          style={{ display: "flex", flexWrap: "wrap" }}
-          renderItem={(item) => (
-            <div>
-              <Button
-                type="danger"
-                theme="borderless"
-                icon={<IconMinus />}
-                onClick={() => {
-                  if (config.d === undefined) {
-                    console.error(`config 不应为空\n ${config}`);
-                    return;
-                  }
-                  const s = new Set(config.d.workspaces);
-                  s.delete(item);
-                  config.update(
-                    clone_and_change(config.d, { workspaces: [...s] })
-                  );
-                }}
-              />
-              {item}
-            </div>
-          )}
+        <Input
+          disabled
+          value={config.d?.workspace}
+          style={{ width: "fit-content" }}
         />
       }
     />
