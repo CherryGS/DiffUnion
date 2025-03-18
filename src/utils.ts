@@ -56,3 +56,10 @@ export const extract_metadata = async (paths: string[]): Promise<ExifJson> => {
     throw e;
   }
 };
+
+/**
+ * 将文件 `file` 加入到位于 `path` 的工作空间中
+ * @param path workspace 路径
+ * @param file image 文件路径
+ */
+export const to_workspace = (path: string, file: string) => {};

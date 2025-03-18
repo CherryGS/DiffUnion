@@ -11,4 +11,7 @@ export class WorkspaceConfig implements _WorkspaceConfig {
     positivePatt: "(?s)^.+?(?=Negative prompt)",
     negativePatt: "(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)",
   };
+  originPath: string = "/origin";
+  thumbPath: string = "/thumb";
+  modelPath: string = "/model";
 }

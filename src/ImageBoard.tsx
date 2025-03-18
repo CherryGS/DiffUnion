@@ -93,7 +93,28 @@ export const ImageBoard = () => {
               backdropFilter: "blur(8px)",
             }}
           />
-          {/* <Divider margin="20px" children="INFO" /> */}
+          <Divider margin="20px" children="Action" />
+          <Space vertical>
+            <Dropdown
+              position="right"
+              render={
+                <Dropdown.Menu>
+                  {config.d ? (
+                    config.d.workspaces.map((d) => (
+                      <Dropdown.Item onClick={() => {}}>{d}</Dropdown.Item>
+                    ))
+                  ) : (
+                    <></>
+                  )}
+                </Dropdown.Menu>
+              }
+            >
+              <Button theme="borderless">
+                添加到 Workspace{" "}
+                {`(当前有 ${config.d ? config.d.workspaces.length : 0} 个 Workspace)`}
+              </Button>
+            </Dropdown>
+          </Space>
           <Divider
             margin="20px"
             children={<Button theme="borderless">Positive</Button>}
@@ -126,57 +147,42 @@ export const ImageBoard = () => {
       {/* 这里不能直接调用 `style` 所以用 `class+css` */}
       <ImagePreview className={"ImageBoard"}>
         {imgList.map((path) => (
-          <Dropdown
+          <Image
             key={path}
-            trigger={"click"}
-            render={
-              <Dropdown.Menu>
-                <Dropdown.Item>Menu Item 1</Dropdown.Item>
-                <Dropdown.Item>Menu Item 2</Dropdown.Item>
-                <Dropdown.Item>Menu Item 3</Dropdown.Item>
-              </Dropdown.Menu>
-            }
-          >
-            <Image
-              key={path}
-              src={convertFileSrc(path)}
-              preview={false}
-              onClick={async (e) => {
-                setImgOnClick(e.target.currentSrc);
-                setVisible(true);
-                const json = await extract_metadata([path]);
-                const data = await invoke<Array<Array<string>>>(
-                  "cmd_use_regex",
-                  {
-                    src: [json[0].Parameters],
-                    patts: [
-                      `(?s)^.+?(?=Negative prompt)`,
-                      // `(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)`,
-                    ],
-                  }
-                );
-                setImgJson(data);
-                console.log(json, data);
-              }}
-              style={{
-                width: "15%",
-                // width: "128px",
-                aspectRatio: "1/1",
-                margin: 8,
-                background: `url(${convertFileSrc(
-                  path
-                )}) no-repeat center center`,
-                border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
-              }}
-              imgStyle={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                objectPosition: "center",
-                backdropFilter: "blur(8px)",
-              }}
-            />
-          </Dropdown>
+            src={convertFileSrc(path)}
+            preview={false}
+            onClick={async (e) => {
+              setImgOnClick(e.target.currentSrc);
+              setVisible(true);
+              const json = await extract_metadata([path]);
+              const data = await invoke<Array<Array<string>>>("cmd_use_regex", {
+                src: [json[0].Parameters],
+                patts: [
+                  `(?s)^.+?(?=Negative prompt)`,
+                  // `(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)`,
+                ],
+              });
+              setImgJson(data);
+              console.log(json, data);
+            }}
+            style={{
+              width: "15%",
+              // width: "128px",
+              aspectRatio: "1/1",
+              margin: 8,
+              background: `url(${convertFileSrc(
+                path
+              )}) no-repeat center center`,
+              border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
+            }}
+            imgStyle={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center",
+              backdropFilter: "blur(8px)",
+            }}
+          />
         ))}
       </ImagePreview>
     </>

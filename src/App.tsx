@@ -33,6 +33,7 @@ const TitleBar = () => {
         top: 0,
         justifyContent: "center",
         alignItems: "center",
+        zIndex: 1000,
       }}
     >
       <Button

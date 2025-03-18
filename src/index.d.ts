@@ -22,4 +22,10 @@ interface _Pattern {
 interface _WorkspaceConfig extends _AbsConfig {
   /** regex patterns */
   patts: _Pattern;
+  /** 存储原始图片的目录相对于工作空间的路径 */
+  originPath: string;
+  /** 存储缩略图的目录相对于工作空间的路径 */
+  thumbPath: string;
+  /** 存储所有模型的目录相对于工作空间的路径 */
+  modelPath: string;
 }
