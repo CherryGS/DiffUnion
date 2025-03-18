@@ -6,6 +6,7 @@ import {
   Card,
   Descriptions,
   Divider,
+  Dropdown,
   Image,
   ImagePreview,
   SideSheet,
@@ -125,42 +126,57 @@ export const ImageBoard = () => {
       {/* 这里不能直接调用 `style` 所以用 `class+css` */}
       <ImagePreview className={"ImageBoard"}>
         {imgList.map((path) => (
-          <Image
+          <Dropdown
             key={path}
-            src={convertFileSrc(path)}
-            preview={false}
-            onClick={async (e) => {
-              setImgOnClick(e.target.currentSrc);
-              setVisible(true);
-              const json = await extract_metadata([path]);
-              const data = await invoke<Array<Array<string>>>("cmd_use_regex", {
-                src: [json[0].Parameters],
-                patts: [
-                  `(?s)^.+?(?=Negative prompt)`,
-                  // `(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)`,
-                ],
-              });
-              setImgJson(data);
-              console.log(json, data);
-            }}
-            style={{
-              width: "15%",
-              // width: "128px",
-              aspectRatio: "1/1",
-              margin: 8,
-              background: `url(${convertFileSrc(
-                path
-              )}) no-repeat center center`,
-              border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
-            }}
-            imgStyle={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              objectPosition: "center",
-              backdropFilter: "blur(8px)",
-            }}
-          />
+            trigger={"click"}
+            render={
+              <Dropdown.Menu>
+                <Dropdown.Item>Menu Item 1</Dropdown.Item>
+                <Dropdown.Item>Menu Item 2</Dropdown.Item>
+                <Dropdown.Item>Menu Item 3</Dropdown.Item>
+              </Dropdown.Menu>
+            }
+          >
+            <Image
+              key={path}
+              src={convertFileSrc(path)}
+              preview={false}
+              onClick={async (e) => {
+                setImgOnClick(e.target.currentSrc);
+                setVisible(true);
+                const json = await extract_metadata([path]);
+                const data = await invoke<Array<Array<string>>>(
+                  "cmd_use_regex",
+                  {
+                    src: [json[0].Parameters],
+                    patts: [
+                      `(?s)^.+?(?=Negative prompt)`,
+                      // `(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)`,
+                    ],
+                  }
+                );
+                setImgJson(data);
+                console.log(json, data);
+              }}
+              style={{
+                width: "15%",
+                // width: "128px",
+                aspectRatio: "1/1",
+                margin: 8,
+                background: `url(${convertFileSrc(
+                  path
+                )}) no-repeat center center`,
+                border: `2px solid ${config.d?.darkMode ? "#fff" : "#000"}`,
+              }}
+              imgStyle={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                objectPosition: "center",
+                backdropFilter: "blur(8px)",
+              }}
+            />
+          </Dropdown>
         ))}
       </ImagePreview>
     </>

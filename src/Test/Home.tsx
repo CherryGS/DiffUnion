@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Button, CodeHighlight, Space, Tag } from "@douyinfe/semi-ui";
+import { Button, CodeHighlight, Dropdown, Space, Tag } from "@douyinfe/semi-ui";
 
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -51,6 +51,18 @@ export const Home = () => {
       </Space>
       <CodeHighlight language="json" code={code} />
       <div>{code}</div>
+      <Dropdown
+        render={
+          <Dropdown.Menu>
+            <Dropdown.Item>Menu Item 1</Dropdown.Item>
+            <Dropdown.Item>Menu Item 2</Dropdown.Item>
+            <Dropdown.Item>Menu Item 3</Dropdown.Item>
+          </Dropdown.Menu>
+        }
+        trigger="contextMenu"
+      >
+        <Button>TestDropDown</Button>
+      </Dropdown>
     </>
   );
 };
