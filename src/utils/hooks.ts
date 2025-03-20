@@ -4,17 +4,26 @@ import { useEffect, useRef } from "react";
 
 import { invoke } from "@tauri-apps/api/core";
 
-export function useRaw<T>(
+export function useRaw<T extends Object>(
   file: string,
   encode: (v: T) => string,
-  decode: (v: string) => T
+  decode: (v: string) => T,
+  defaultV: T | undefined = undefined
 ) {
   const queryClient = useQueryClient();
 
   // 读取函数
   const fetch = async (): Promise<T> => {
     const v = await invoke<string>("cmd_read_text", { file });
-    return decode(v);
+    let r = decode(v);
+    if (defaultV !== undefined) {
+      for (const i in defaultV) {
+        if (r.hasOwnProperty(i) === false) {
+          r[i] = defaultV[i];
+        }
+      }
+    }
+    return r;
   };
 
   // 保存函数
@@ -78,6 +87,13 @@ export function useRaw<T>(
   };
 }
 
-export function useJson<T>(file: string) {
-  return useRaw<T>(file, JSON.stringify, JSON.parse);
+/**
+ * @param file 读取文件路径
+ * @param defaultV 返回的默认值，当定义后将填充返回值中没有的项
+ */
+export function useJson<T extends Object>(
+  file: string,
+  defaultV: T | undefined = undefined
+) {
+  return useRaw<T>(file, JSON.stringify, JSON.parse, defaultV);
 }

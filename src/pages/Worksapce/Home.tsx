@@ -1,8 +1,7 @@
+import { useGlobalConfig } from "#/utils";
 import { useNavigate } from "react-router";
 
 import { Button, Card, List, Typography } from "@douyinfe/semi-ui";
-
-import { useGlobalConfig } from "../utils";
 
 export const Home = () => {
   const { Title } = Typography;
@@ -15,7 +14,7 @@ export const Home = () => {
           <List
             bordered={false}
             split={false}
-            dataSource={config.d?.workspace}
+            dataSource={["1"]}
             renderItem={(v) => (
               <List.Item>
                 <Button

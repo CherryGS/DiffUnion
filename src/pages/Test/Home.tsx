@@ -1,18 +1,14 @@
+import { extract_metadata } from "#/utils";
 import { useState } from "react";
 
 import { Button, CodeHighlight, Dropdown, Space, Tag } from "@douyinfe/semi-ui";
-import { Image } from "@douyinfe/semi-ui";
 
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
-import { extract_metadata } from "../utils";
-
 export const Home = () => {
   const [path, setPath] = useState<string[]>([]);
   const [code, setCode] = useState("{}");
-  const [dropdVis, setDropdVis] = useState(false);
-  const [loc, setLoc] = useState([0, 0]);
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });

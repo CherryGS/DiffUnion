@@ -39,3 +39,8 @@ interface AppConfig {
   /** 工作空间相关的设置 */
   workspace: LibConfig;
 }
+
+interface ModelConfig {
+  /** 文件夹是否会递归显示子文件夹内容 */
+  recursion: boolean;
+}

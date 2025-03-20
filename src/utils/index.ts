@@ -6,6 +6,8 @@ import { Command } from "@tauri-apps/plugin-shell";
 
 import { useJson } from "./hooks";
 
+export * from "./hooks";
+
 export const useGlobalConfig = () => {
   const dataDir = useQuery({
     queryKey: ["dataDir"],
@@ -26,8 +28,11 @@ export const useGlobalConfig = () => {
 
 export const useWorkspaceConfig = () => {};
 
-export function clone_and_change<T>(x: T, o: Partial<T>): T {
-  return { ...JSON.parse(JSON.stringify(x)), ...o };
+export function copy<T>(x: T): T {
+  return JSON.parse(JSON.stringify(x));
+}
+export function copy_and_change<T>(x: T, o: Partial<T>): T {
+  return { ...copy(x), ...o };
 }
 
 export const time = () => {

@@ -32,6 +32,7 @@ notify = { version = "8.0.0", features = ["serde"] }
 walkdir = "2.5.0"
 rayon = "1.10.0"
 fancy-regex = "0.14.0"
+ts-rs = "10.1.0"
 
 [profile.dev]
 incremental = true # 以较小的步骤编译您的二进制文件。

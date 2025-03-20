@@ -1,8 +1,12 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{clone, collections::HashSet, path::PathBuf};
 
+use tauri::{AppHandle, Manager, State};
 use walkdir::WalkDir;
 
-use crate::utils::use_regex;
+use crate::{
+    config::{AppState, AppStrucDir},
+    utils::use_regex,
+};
 
 /**
 根据给定路径数组递归获取所有路径下扩展名符合的文件，默认按时间降序排列，走符号链接，当出现循环时行为未知
@@ -67,4 +71,9 @@ pub fn cmd_write_text(file: PathBuf, cont: String) -> Result<(), String> {
 #[tauri::command]
 pub fn cmd_use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
     use_regex(src, patts)
+}
+
+#[tauri::command]
+pub fn cmd_get_struc(state: State<'_, AppState>) -> AppStrucDir {
+    state.struc.clone()
 }

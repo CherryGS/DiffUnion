@@ -1,10 +1,10 @@
 pub mod command;
+pub mod config;
 pub mod utils;
 use command::*;
-use std::{path::PathBuf, sync::OnceLock};
+use config::{AppState, AppStrucDir};
+use std::path::PathBuf;
 use tauri::Manager;
-
-static APP_DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -19,14 +19,19 @@ pub fn run() {
             cmd_find_files_by_ext,
             cmd_read_text,
             cmd_write_text,
-            cmd_use_regex
+            cmd_use_regex,
+            cmd_get_struc
         ])
         .setup(|app| {
-            // 初始化应用数据目录并保存
-            std::fs::create_dir_all(
-                APP_DATA_DIR.get_or_init(|| app.path().app_data_dir().unwrap()),
-            )?;
-
+            let app_data_dir = app.path().app_data_dir().unwrap();
+            app.manage(AppState::new(AppStrucDir::new(
+                if let Ok(datafolder) = std::fs::read_to_string(app_data_dir.join("dataFolder.txt"))
+                {
+                    PathBuf::from(datafolder)
+                } else {
+                    app_data_dir.clone()
+                },
+            )));
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -1,3 +1,4 @@
+import { extract_metadata, useGlobalConfig } from "#/utils";
 import { LRUCache } from "lru-cache";
 import { useEffect, useState } from "react";
 
@@ -17,7 +18,6 @@ import {
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 
 import "./ImageBoard.css";
-import { extract_metadata, useGlobalConfig } from "./utils";
 
 const cache = new LRUCache<string, string[]>({
   max: 500,

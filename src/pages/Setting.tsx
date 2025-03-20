@@ -1,3 +1,4 @@
+import { clone_and_change, useGlobalConfig } from "#/utils";
 import { cloneDeep } from "lodash";
 
 import { IconMinus, IconPlusCircle } from "@douyinfe/semi-icons";
@@ -15,8 +16,6 @@ import { CardProps } from "@douyinfe/semi-ui/lib/es/card";
 import { SpaceProps } from "@douyinfe/semi-ui/lib/es/space";
 
 import { open } from "@tauri-apps/plugin-dialog";
-
-import { clone_and_change, useGlobalConfig } from "./utils";
 
 interface SettingCardProps {
   card?: CardProps;
@@ -72,13 +71,13 @@ const SettingCard = (op: SettingCardProps) => {
   );
 };
 
-export const Settings = () => {
+export const Setting = () => {
   return (
-    <Space vertical style={{ width: "100%" }}>
+    <Space vertical style={{ width: "100%", padding: "12px" }}>
       <SettingCard
         card={{
           title: "Interface",
-          style: { width: "-webkit-fill-available" },
+          // style: { width: "-webkit-fill-available" },
         }}
         space={{ style: { width: "-webkit-fill-available" } }}
         cont={[IF_DarkMode]}
@@ -209,13 +208,7 @@ const Data_Workspaces = () => {
   return (
     <SettingLine
       left={<Text strong>工作空间</Text>}
-      right={
-        <Input
-          disabled
-          value={config.d?.workspace}
-          style={{ width: "fit-content" }}
-        />
-      }
+      right={<Input disabled value={"1"} style={{ width: "fit-content" }} />}
     />
   );
 };
