@@ -12,6 +12,9 @@
   "imports": {
     "#/*": [
       "./src/*"
+    ],
+    "#bind/*": [
+      "./src-tauri/bindings/*"
     ]
   },
   "dependencies": {

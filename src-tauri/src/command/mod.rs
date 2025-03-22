@@ -1,17 +1,17 @@
-use std::{clone, collections::HashSet, path::PathBuf};
+use std::{collections::HashSet, path::PathBuf};
 
-use tauri::{AppHandle, Manager, State};
+use tauri::State;
 use walkdir::WalkDir;
 
 use crate::{
-    config::{AppState, AppStrucDir},
+    config::{AppState, GlobalConfig},
     utils::use_regex,
 };
 
 /**
 根据给定路径数组递归获取所有路径下扩展名符合的文件，默认按时间降序排列，走符号链接，当出现循环时行为未知
 */
-#[tauri::command()]
+#[tauri::command]
 pub fn cmd_find_files_by_ext(paths: Vec<&str>, exts: Vec<&str>) -> Vec<PathBuf> {
     let mut set = HashSet::new();
     for path in paths {
@@ -40,7 +40,7 @@ pub fn cmd_find_files_by_ext(paths: Vec<&str>, exts: Vec<&str>) -> Vec<PathBuf> 
 /**
  * 读取一个文本类型文件
  */
-#[tauri::command()]
+#[tauri::command]
 pub fn cmd_read_text(file: PathBuf) -> Result<String, String> {
     match std::fs::read_to_string(&file) {
         Ok(cont) => Ok(cont),
@@ -74,6 +74,6 @@ pub fn cmd_use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>
 }
 
 #[tauri::command]
-pub fn cmd_get_struc(state: State<'_, AppState>) -> AppStrucDir {
-    state.struc.clone()
+pub fn cmd_get_global(state: State<'_, AppState>) -> GlobalConfig {
+    state.global.clone()
 }

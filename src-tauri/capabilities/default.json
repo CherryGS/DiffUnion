@@ -6,7 +6,6 @@
     "main"
   ],
   "permissions": [
-    "opener:default",
     "core:default",
     "core:window:default",
     "core:window:allow-start-dragging",
@@ -16,9 +15,6 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-internal-toggle-maximize",
     "dialog:default",
-    "fs:default",
-    "fs:allow-app-read",
-    "fs:allow-app-write",
     "shell:default",
     "shell:allow-open",
     {

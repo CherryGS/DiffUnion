@@ -1,19 +1,24 @@
-import { useEffect } from "react";
+import { GlobalConfig } from "#bind/GlobalConfig.ts";
+import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 
-import { ImageBoard } from "./pages/ImageBoard";
+import { invoke } from "@tauri-apps/api/core";
+
+import { ReadonlyConfig, defaultGlobalConfig } from "./config";
 import { MainLayout } from "./pages/Main/";
 import { ModelLayout } from "./pages/Model";
-import { Setting } from "./pages/Setting";
-import { TestHome, TestLayout } from "./pages/Test";
-import { WsHome, WsLayout, WsPage } from "./pages/Worksapce";
 import { useGlobalConfig } from "./utils";
-
-const global_init = async () => {};
 
 const App = () => {
   const navigate = useNavigate();
   const { config, dataDir: _ } = useGlobalConfig();
+  const [readOnlyConfig, setReadOnlyConfig] = useState(defaultGlobalConfig);
+
+  useEffect(() => {
+    invoke<GlobalConfig>("cmd_get_global")
+      .then((d) => setReadOnlyConfig(d))
+      .catch((e) => console.log(e));
+  }, []);
 
   useEffect(() => {
     switch (config.q.status) {
@@ -32,27 +37,16 @@ const App = () => {
   }, [config.d]);
 
   return (
-    <>
+    <ReadonlyConfig.Provider value={readOnlyConfig}>
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<div>Home</div>} />
           <Route path="error" element={<div>Error</div>} />
-          {/* <Route path="setting" element={<Setting />} /> */}
-          {/* <Route path="folder" element={<ImageBoard />} /> */}
-
-          {/* <Route path="workspace" element={<WsLayout />}>
-            <Route index element={<WsHome />} />
-            <Route path=":path" element={<WsPage />} />
-          </Route> */}
-
-          {/* <Route path="test" element={<TestLayout />}>
-            <Route index element={<TestHome />} />
-          </Route> */}
 
           <Route path="model" element={<ModelLayout />} />
         </Route>
       </Routes>
-    </>
+    </ReadonlyConfig.Provider>
   );
 };
 

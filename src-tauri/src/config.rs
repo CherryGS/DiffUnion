@@ -4,17 +4,23 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub struct AppState {
+    pub global: GlobalConfig,
+}
+
+/** 前后端共享的配置的结构 */
+#[derive(Debug, Serialize, Deserialize, TS, Clone)]
+#[ts(export)]
+pub struct GlobalConfig {
     pub struc: AppStrucDir,
 }
 
-impl AppState {
+impl GlobalConfig {
     pub fn new(struc: AppStrucDir) -> Self {
-        AppState { struc }
+        GlobalConfig { struc }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, TS, Clone)]
-#[ts(export)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
 pub struct AppStrucDir {
     /** 结构的根目录 */
     base: PathBuf,
@@ -35,12 +41,12 @@ pub struct AppStrucDir {
 impl AppStrucDir {
     pub fn new(base: PathBuf) -> AppStrucDir {
         AppStrucDir {
-            backup: base.join("backup"),
-            config: base.join("config"),
-            database: base.join("database"),
-            media: base.join("media"),
-            model: base.join("model"),
-            thumbnail: base.join("thumbnail"),
+            backup: base.join("Backup"),
+            config: base.join("Config"),
+            database: base.join("Database"),
+            media: base.join("Media"),
+            model: base.join("Model"),
+            thumbnail: base.join("Thumbnail"),
             base,
         }
     }

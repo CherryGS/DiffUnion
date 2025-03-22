@@ -1,22 +1,20 @@
-// export class AppConfig implements _AppConfig {
-//   time: number = 0;
-//   darkMode: number = 1;
-//   watchDirs: string[] = [];
-//   workspace: _WorkspaceConfig = WorkspaceConfig;
-// }
+import { GlobalConfig } from "#bind/GlobalConfig";
+import { createContext } from "react";
 
-// class WorkspaceConfig implements _WorkspaceConfig {
-//   time: number = 0;
-//   patts: _Pattern = {
-//     positive: "(?s)^.+?(?=Negative prompt)",
-//     negative: "(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)",
-//   };
-//   originPath: string = "/origin";
-//   thumbPath: string = "/thumb";
-//   modelPath: string = "/model";
-// }
+export const defaultGlobalConfig: GlobalConfig = {
+  struc: {
+    base: "",
+    backup: "",
+    config: "",
+    database: "",
+    media: "",
+    model: "",
+    thumbnail: "",
+  },
+};
+export const ReadonlyConfig = createContext<GlobalConfig>(defaultGlobalConfig);
 
-const defaultPattern: Pattern = {
+export const defaultPattern: Pattern = {
   positive: "(?s)^.+?(?=Negative prompt)",
   negative: "(?ms)(?<=Negative prompt:).+?(?=^[A-Z]+[a-z ]+:)",
   sampler: "(?<=Sampler:).+?}(?=,)",
