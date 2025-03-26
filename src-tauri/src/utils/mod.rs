@@ -1,4 +1,5 @@
 /// 该文件不应包含 tauri 的内容
+mod database;
 use fancy_regex::Regex;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};

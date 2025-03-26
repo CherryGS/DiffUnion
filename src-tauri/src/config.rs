@@ -1,11 +1,15 @@
-use std::path::PathBuf;
-
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, fs::create_dir_all, io::Error, path::PathBuf};
 use ts_rs::TS;
 
 pub struct AppState {
     pub global: GlobalConfig,
+    pub conn: ConnectionCache,
 }
+
+/** 缓存数据库链接，其中 */
+type ConnectionCache = HashMap<String, DatabaseConnection>;
 
 /** 前后端共享的配置的结构 */
 #[derive(Debug, Serialize, Deserialize, TS, Clone)]
@@ -23,24 +27,24 @@ impl GlobalConfig {
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
 pub struct AppStrucDir {
     /** 结构的根目录 */
-    base: PathBuf,
+    pub base: PathBuf,
     /** 备份目录 */
-    backup: PathBuf,
+    pub backup: PathBuf,
     /** 配置文件目录 */
-    config: PathBuf,
+    pub config: PathBuf,
     /** 数据库目录 */
-    database: PathBuf,
+    pub database: PathBuf,
     /** 媒体库目录 */
-    media: PathBuf,
+    pub media: PathBuf,
     /** 模型库目录 */
-    model: PathBuf,
+    pub model: PathBuf,
     /** 缩略图目录 */
-    thumbnail: PathBuf,
+    pub thumbnail: PathBuf,
 }
 
 impl AppStrucDir {
-    pub fn new(base: PathBuf) -> AppStrucDir {
-        AppStrucDir {
+    pub fn new(base: PathBuf) -> Result<AppStrucDir, std::io::Error> {
+        let p = AppStrucDir {
             backup: base.join("Backup"),
             config: base.join("Config"),
             database: base.join("Database"),
@@ -48,6 +52,24 @@ impl AppStrucDir {
             model: base.join("Model"),
             thumbnail: base.join("Thumbnail"),
             base,
+        };
+        Self::create_folder(&p)?;
+        Ok(p)
+    }
+    pub fn create_folder(&self) -> Result<(), std::io::Error> {
+        for i in vec![
+            &self.base,
+            &self.backup,
+            &self.config,
+            &self.database,
+            &self.media,
+            &self.model,
+            &self.thumbnail,
+        ]
+        .into_iter()
+        {
+            create_dir_all(i)?;
         }
+        Ok(())
     }
 }

@@ -68,12 +68,17 @@ pub fn cmd_write_text(file: PathBuf, cont: String) -> Result<(), String> {
     }
 }
 
+/** 多线程正则匹配 */
 #[tauri::command]
 pub fn cmd_use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
     use_regex(src, patts)
 }
 
+/** 获取全局只读设置 */
 #[tauri::command]
 pub fn cmd_get_global(state: State<'_, AppState>) -> GlobalConfig {
     state.global.clone()
 }
+
+#[tauri::command]
+pub fn cmd_add_to_lib(file: PathBuf) {}

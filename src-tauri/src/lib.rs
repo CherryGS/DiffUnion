@@ -1,10 +1,12 @@
-pub mod command;
-pub mod config;
-pub mod utils;
+mod command;
+mod config;
+mod database;
+mod entity;
+mod utils;
 use command::*;
 use config::{AppState, AppStrucDir, GlobalConfig};
-use std::path::PathBuf;
-use tauri::Manager;
+use std::{collections::HashMap, path::PathBuf};
+use tauri::{async_runtime::block_on, Manager};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -21,8 +23,8 @@ pub fn run() {
         ])
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
-            app.manage(AppState {
-                global: GlobalConfig::new(AppStrucDir::new(
+            let global = GlobalConfig::new(
+                AppStrucDir::new(
                     if let Ok(datafolder) =
                         std::fs::read_to_string(app_data_dir.join("dataFolder.txt"))
                     {
@@ -30,8 +32,22 @@ pub fn run() {
                     } else {
                         app_data_dir.clone()
                     },
-                )),
-            });
+                )
+                .unwrap(),
+            );
+            let mut conn = HashMap::new();
+            let res = block_on(database::model::init_db(format!(
+                "sqlite://{}",
+                global
+                    .struc
+                    .database
+                    .join("model.db?mode=rwc")
+                    .to_str()
+                    .unwrap()
+            )))?;
+            conn.insert("model".to_string(), res);
+
+            app.manage(AppState { global, conn });
 
             Ok(())
         })

@@ -6,6 +6,7 @@ use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
 use std::{error::Error, iter::zip};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 fn _extract_metadata(img_path: &Path, exif_path: &Path) -> Result<Value, Box<dyn Error>> {
     // 1. 构建命令行
@@ -89,5 +90,6 @@ fn _processing_images(
 // }
 
 fn main() {
+    tracing_subscriber::registry().with(fmt::layer()).init();
     diffunion_lib::run();
 }
