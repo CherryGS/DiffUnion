@@ -2,24 +2,10 @@
 mod database;
 use fancy_regex::Regex;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{LazyLock, RwLock},
 };
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ImageInfo {
-    positive: String,
-    negative: String,
-    sampler: String,
-    scheduler: String,
-    steps: u32,
-    seed: u32,
-    cfg: i32,
-    model: String,
-    loras: Vec<String>,
-}
 
 static REGEX_CACHE: LazyLock<RwLock<HashMap<String, Regex>>> =
     LazyLock::new(|| RwLock::new(HashMap::new()));

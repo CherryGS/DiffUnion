@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     .col(string_null(Main::Note))
                     .col(big_unsigned(Main::CreateTime))
                     .col(big_unsigned(Main::UpdateTime))
-                    .col(json_null(Main::Civitai))
+                    .col(string_null(Main::Civitai))
                     .to_owned(),
             )
             .await?;

@@ -1,12 +1,11 @@
 mod command;
 mod config;
 mod database;
-mod entity;
 mod utils;
 use command::*;
 use config::{AppState, AppStrucDir, GlobalConfig, PoolManager};
-use std::{collections::HashMap, path::PathBuf};
-use tauri::{async_runtime::block_on, Manager, State};
+use std::path::PathBuf;
+use tauri::{async_runtime::block_on, Manager};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -23,6 +22,7 @@ pub fn run() {
         ])
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
+
             let global = GlobalConfig::new(
                 AppStrucDir::new(
                     if let Ok(datafolder) =
@@ -35,6 +35,7 @@ pub fn run() {
                 )
                 .unwrap(),
             );
+
             let manager = PoolManager::new();
             manager.add(
                 "model".to_string(),
@@ -57,7 +58,9 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|w, e| {
+            // 当收到窗口关闭事件时
             if let tauri::WindowEvent::CloseRequested { .. } = e {
+                // 关闭所有数据库连接
                 block_on(w.app_handle().state::<AppState>().conn.close()).unwrap();
             }
         })

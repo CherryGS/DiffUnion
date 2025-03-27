@@ -1,5 +1,4 @@
-use migration_model::MigratorTrait;
-use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr};
+use sea_orm::{DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,

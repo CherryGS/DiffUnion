@@ -3,7 +3,7 @@ from pathlib import Path
 
 base = Path("../src/entity/")
 
-d = [(Path("models.db"), base.joinpath("model"))]
+d = [(Path("model.db"), base.joinpath("model"))]
 
 
 for i, j in d:
