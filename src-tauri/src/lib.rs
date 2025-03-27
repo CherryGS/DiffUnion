@@ -4,9 +4,9 @@ mod database;
 mod entity;
 mod utils;
 use command::*;
-use config::{AppState, AppStrucDir, GlobalConfig};
+use config::{AppState, AppStrucDir, GlobalConfig, PoolManager};
 use std::{collections::HashMap, path::PathBuf};
-use tauri::{async_runtime::block_on, Manager};
+use tauri::{async_runtime::block_on, Manager, State};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -35,21 +35,31 @@ pub fn run() {
                 )
                 .unwrap(),
             );
-            let mut conn = HashMap::new();
-            let res = block_on(database::model::init_db(format!(
-                "sqlite://{}",
-                global
-                    .struc
-                    .database
-                    .join("model.db?mode=rwc")
-                    .to_str()
-                    .unwrap()
-            )))?;
-            conn.insert("model".to_string(), res);
+            let manager = PoolManager::new();
+            manager.add(
+                "model".to_string(),
+                block_on(database::model::init_db(format!(
+                    "sqlite://{}",
+                    global
+                        .struc
+                        .database
+                        .join("model.db?mode=rwc")
+                        .to_str()
+                        .unwrap()
+                )))?,
+            )?;
 
-            app.manage(AppState { global, conn });
+            app.manage(AppState {
+                global,
+                conn: manager,
+            });
 
             Ok(())
+        })
+        .on_window_event(|w, e| {
+            if let tauri::WindowEvent::CloseRequested { .. } = e {
+                block_on(w.app_handle().state::<AppState>().conn.close()).unwrap();
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -7,6 +7,8 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+members = [".", "entity", "migration/*"]
 
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
@@ -19,6 +21,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+migration_model = { path = "migration/migration_model" }
+entity = { path = "entity" }
+
 tauri = { version = "2.3.0", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-shell = "2"
@@ -37,9 +42,11 @@ serde = { version = "1", features = ["derive"] }
 sea-orm = { version = "1.1.7", features = [
   "runtime-tokio-native-tls",
   "sqlx-sqlite",
+  "debug-print",
 ] }
 ts-rs = "10.1.0"
 tracing-subscriber = "0.3.19"
+futures = "0.3.31"
 
 
 [profile.dev]

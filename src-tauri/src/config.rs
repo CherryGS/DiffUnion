@@ -1,15 +1,59 @@
-use sea_orm::DatabaseConnection;
+use migration_model::MigratorTrait;
+use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs::create_dir_all, io::Error, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs::create_dir_all,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+};
 use ts_rs::TS;
+
+/** 数据库链接管理 */
+pub struct PoolManager {
+    pools: Arc<Mutex<HashMap<String, DatabaseConnection>>>,
+    closed: Arc<AtomicBool>,
+}
 
 pub struct AppState {
     pub global: GlobalConfig,
-    pub conn: ConnectionCache,
+    pub conn: PoolManager,
 }
 
-/** 缓存数据库链接，其中 */
-type ConnectionCache = HashMap<String, DatabaseConnection>;
+impl PoolManager {
+    pub fn new() -> Self {
+        Self {
+            pools: Arc::new(Mutex::new(HashMap::new())),
+            closed: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    pub fn add(&self, name: String, pool: DatabaseConnection) -> Result<(), String> {
+        if self.closed.load(Ordering::SeqCst) {
+            return Err("PoolManager is shutting down, cannot add pool.".to_string());
+        }
+        let mut inner = self.pools.lock().unwrap();
+        inner.insert(name, pool);
+        Ok(())
+    }
+
+    pub fn get(&self, name: &String) -> Option<DatabaseConnection> {
+        let inner = self.pools.lock().unwrap();
+        inner.get(name).cloned()
+    }
+
+    pub async fn close(&self) -> Result<(), DbErr> {
+        self.closed.store(true, Ordering::SeqCst);
+        let mut inner = self.pools.lock().unwrap();
+        for (_, pool) in inner.drain() {
+            pool.close().await?;
+        }
+        Ok(())
+    }
+}
 
 /** 前后端共享的配置的结构 */
 #[derive(Debug, Serialize, Deserialize, TS, Clone)]
