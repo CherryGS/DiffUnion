@@ -1,5 +1,4 @@
 /// 该文件不应包含 tauri 的内容
-mod database;
 use fancy_regex::Regex;
 use rayon::prelude::*;
 use std::{
@@ -43,6 +42,13 @@ pub fn use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>>> {
         })
         .collect();
     res
+}
+
+pub fn time_now() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
 }
 
 #[cfg(test)]

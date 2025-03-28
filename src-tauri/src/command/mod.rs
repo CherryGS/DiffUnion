@@ -1,3 +1,5 @@
+pub mod model;
+pub mod prelude;
 use std::{collections::HashSet, path::PathBuf};
 
 use tauri::State;
@@ -79,6 +81,3 @@ pub fn cmd_use_regex(src: Vec<&str>, patts: Vec<String>) -> Vec<Vec<Option<&str>
 pub fn cmd_get_global(state: State<'_, AppState>) -> GlobalConfig {
     state.global.clone()
 }
-
-#[tauri::command]
-pub fn cmd_add_to_lib(file: PathBuf) {}

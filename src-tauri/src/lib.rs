@@ -2,7 +2,7 @@ mod command;
 mod config;
 mod database;
 mod utils;
-use command::*;
+use command::prelude::*;
 use config::{AppState, AppStrucDir, GlobalConfig, PoolManager};
 use std::path::PathBuf;
 use tauri::{async_runtime::block_on, Manager};
@@ -18,7 +18,8 @@ pub fn run() {
             cmd_read_text,
             cmd_write_text,
             cmd_use_regex,
-            cmd_get_global
+            cmd_get_global,
+            cmd_add_one_model
         ])
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
