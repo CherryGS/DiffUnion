@@ -3,8 +3,12 @@
 
 use image::ImageReader;
 use serde_json::Value;
-use std::path::Path;
 use std::process::Command;
+use std::{
+    collections::HashMap,
+    path::Path,
+    sync::{Arc, RwLock},
+};
 use std::{error::Error, iter::zip};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 

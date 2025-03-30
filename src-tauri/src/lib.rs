@@ -1,6 +1,7 @@
 mod command;
 mod config;
 mod database;
+mod request;
 mod utils;
 use command::prelude::*;
 use config::{AppState, AppStrucDir, GlobalConfig, PoolManager};

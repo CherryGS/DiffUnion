@@ -48,6 +48,7 @@ tracing-subscriber = "0.3.19"
 futures = "0.3.31"
 tokio = { version = "1.44.1", features = ["macros", "rt"] }
 sha2 = "0.10.8"
+reqwest = "0.12.15"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
